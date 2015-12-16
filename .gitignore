@@ -1,0 +1,12 @@
+/RUNNING_PID
+/logs/
+/project/*-shim.sbt
+/project/project/
+**/target/
+
+#IDEA specific
+**/.idea/workspace.xml
+**/.idea/tasks.xml
+
+#OSX specific
+.DS_Store
