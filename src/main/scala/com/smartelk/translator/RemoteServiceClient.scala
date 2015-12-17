@@ -1,7 +1,9 @@
 package com.smartelk.translator
 
+import com.smartelk.translator.actions.TranslateAction
+
 import scalaz.concurrent.Task
-import com.smartelk.translator.TranslateAction._
+import TranslateAction._
 
 trait RemoteServiceClient {
   def requestToken(clientId: String, clientSecret: String): Task[RequestTokenResult]
