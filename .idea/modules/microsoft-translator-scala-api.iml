@@ -24,11 +24,15 @@
     <orderEntry type="library" scope="TEST" name="SBT: org.objenesis:objenesis:2.1:jar" level="project" />
     <orderEntry type="library" name="SBT: org.scala-lang:scala-library:2.11.7:jar" level="project" />
     <orderEntry type="library" scope="TEST" name="SBT: org.scala-lang:scala-reflect:2.11.2:jar" level="project" />
-    <orderEntry type="library" name="SBT: org.scala-lang.modules:scala-parser-combinators_2.11:1.0.4:jar" level="project" />
-    <orderEntry type="library" name="SBT: org.scala-lang.modules:scala-xml_2.11:1.0.4:jar" level="project" />
     <orderEntry type="library" scope="TEST" name="SBT: org.scalatest:scalatest_2.11:2.2.1:jar" level="project" />
-    <orderEntry type="library" name="SBT: org.scalaz:scalaz-concurrent_2.11:7.1.4:jar" level="project" />
-    <orderEntry type="library" name="SBT: org.scalaz:scalaz-core_2.11:7.1.4:jar" level="project" />
-    <orderEntry type="library" name="SBT: org.scalaz:scalaz-effect_2.11:7.1.4:jar" level="project" />
+    <orderEntry type="library" name="SBT: org.scalaj:scalaj-http_2.11:2.2.0:jar" level="project" />
+    <orderEntry type="library" name="SBT: com.thoughtworks.paranamer:paranamer:2.8:jar" level="project" />
+    <orderEntry type="library" name="SBT: org.json4s:json4s-ast_2.11:3.3.0:jar" level="project" />
+    <orderEntry type="library" name="SBT: org.json4s:json4s-core_2.11:3.3.0:jar" level="project" />
+    <orderEntry type="library" name="SBT: org.json4s:json4s-native_2.11:3.3.0:jar" level="project" />
+    <orderEntry type="library" name="SBT: org.json4s:json4s-scalap_2.11:3.3.0:jar" level="project" />
+    <orderEntry type="library" name="SBT: org.scala-lang.modules:scala-xml_2.11:1.0.5:jar" level="project" />
+    <orderEntry type="library" name="SBT: com.typesafe:config:1.2.1:jar" level="project" />
+    <orderEntry type="library" name="SBT: com.typesafe.akka:akka-actor_2.11:2.3.9:jar" level="project" />
   </component>
 </module>

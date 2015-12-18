@@ -1,11 +1,8 @@
 package com.smartelk.translator.actions
 
-import com.smartelk.translator.Dsl.AudioContentType.AudioContentType
-import com.smartelk.translator.Dsl.AudioQuality.AudioQuality
-import com.smartelk.translator.Dsl.{scalaFuture, scalazTask}
-import com.smartelk.translator.TranslatorSettings
+import com.smartelk.translator.Dsl._
+import com.smartelk.translator.remote.RemoteService.RemoteServiceClient
 import scala.concurrent.Future
-import scalaz.concurrent.Task
 
 private[translator] object SpeakAction {
    case class SpeakRequest(text: String,
@@ -18,24 +15,23 @@ private[translator] object SpeakAction {
 
   val speakTextSizeLimit = 2000
 
-   class SpeaksActionTextState(val state: SpeakRequest) extends ActionState[SpeakRequest]{
+   class SpeaksActionState(val state: SpeakRequest) extends ActionState[SpeakRequest]{
      def in(lang: String) = {
        require(!lang.isEmpty, "Language to speak IN must not be empty")
-       new SpeakActionInState(state.copy(lang = Some(lang)))
+       new SpeakActionStateIn(state.copy(lang = Some(lang)))
      }
    }
 
-   class SpeakActionInState(val state: SpeakRequest) extends ActionState[SpeakRequest]{
+   class SpeakActionStateIn(val state: SpeakRequest) extends ActionState[SpeakRequest]{
      def withAudioContentType(contentType: AudioContentType) = {
-       new SpeakActionInState(state.copy(audioContentType = Some(contentType)))
+       new SpeakActionStateIn(state.copy(audioContentType = Some(contentType)))
      }
 
      def withQuality(quality: AudioQuality) = {
-       new SpeakActionInState(state.copy(quality = Some(quality)))
+       new SpeakActionStateIn(state.copy(quality = Some(quality)))
      }
 
-     def as(scalazTaskWord: scalazTask.type)(implicit translatorSettings: TranslatorSettings): Task[String] = ???
-     def as(scalaFutureWord: scalaFuture.type)(implicit translatorSettings: TranslatorSettings): Future[String] = ???
+     def as(scalaFutureWord: future.type)(implicit client: RemoteServiceClient): Future[String] = ???
    }
  }
 

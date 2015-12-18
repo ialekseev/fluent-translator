@@ -1,49 +1,41 @@
 package com.smartelk.translator.actions
 
-import com.smartelk.translator.Dsl.{scalaFuture, scalazTask}
-import com.smartelk.translator.TranslatorSettings
+import com.smartelk.translator.Dsl.{future}
+import com.smartelk.translator.remote.RemoteService.RemoteServiceClient
 import scala.concurrent.Future
-import scalaz.concurrent.Task
 
 private[translator] object GetTranslationsAction
 {
   case class GetTranslationsRequest(text: String,
+                              maxTranslations: Int,
                               fromLang: Option[String] = None,
                               toLang: Option[String] = None,
-                              maxTranslations: Option[Int] = None,
                               category: Option[String] = None) {
     requireValidText(text)
+    require(maxTranslations > 0, "Maximum number of translations to return must be > 0")
   }
 
-  class GetTranslationsActionTextState(val state: GetTranslationsRequest) extends ActionState[GetTranslationsRequest]{
+  class GetTranslationsActionState(val state: GetTranslationsRequest) extends ActionState[GetTranslationsRequest]{
     def from(lang: String) = {
       requireValidFrom(lang)
-      new GetTranslationsActionFromState(state.copy(fromLang = Some(lang)))
+      new GetTranslationsActionStateFrom(state.copy(fromLang = Some(lang)))
     }
   }
 
-  class GetTranslationsActionFromState(val state: GetTranslationsRequest) extends ActionState[GetTranslationsRequest]{
+  class GetTranslationsActionStateFrom(val state: GetTranslationsRequest) extends ActionState[GetTranslationsRequest]{
     def to(lang: String) = {
       requireValidTo(lang)
-      new GetTranslationsActionToState(state.copy(toLang = Some(lang)))
+      new GetTranslationsActionStateTo(state.copy(toLang = Some(lang)))
     }
   }
 
-  class GetTranslationsActionToState(val state: GetTranslationsRequest) extends ActionState[GetTranslationsRequest] {
-    def withMaxTranslations(max: Int) = {
-      require(max > 0, "Maximum number of translations to return must be > 0")
-      new GetTranslationsActionMaxTranslationsState(state.copy(maxTranslations = Some(max)))
-    }
-  }
-
-  class GetTranslationsActionMaxTranslationsState(val state: GetTranslationsRequest) extends ActionState[GetTranslationsRequest] {
+  class GetTranslationsActionStateTo(val state: GetTranslationsRequest) extends ActionState[GetTranslationsRequest] {
     def withCategory(category: String) = {
       requireValidCategory(category)
-      new GetTranslationsActionMaxTranslationsState(state.copy(category = Some(category)))
+      new GetTranslationsActionStateTo(state.copy(category = Some(category)))
     }
 
-    def as(scalazTaskWord: scalazTask.type)(implicit translatorSettings: TranslatorSettings): Task[String] = ???
-    def as(scalaFutureWord: scalaFuture.type)(implicit translatorSettings: TranslatorSettings): Future[String] = ???
+    def as(scalaFutureWord: future.type)(implicit client: RemoteServiceClient): Future[String] = ???
   }
 }
 
