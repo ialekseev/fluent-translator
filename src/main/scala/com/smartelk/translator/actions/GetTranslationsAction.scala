@@ -1,12 +1,11 @@
 package com.smartelk.translator.actions
 
-import com.smartelk.translator.Dsl.{future}
-import com.smartelk.translator.remote.RemoteService.RemoteServiceClient
+import com.smartelk.translator.Dsl.{TranslatorClient, future}
 import scala.concurrent.Future
 
-private[translator] object GetTranslationsAction
-{
-  case class GetTranslationsRequest(text: String,
+private[translator] object GetTranslationsAction {
+
+  case class GetTranslationsActionParams(text: String,
                               maxTranslations: Int,
                               fromLang: Option[String] = None,
                               toLang: Option[String] = None,
@@ -15,27 +14,27 @@ private[translator] object GetTranslationsAction
     require(maxTranslations > 0, "Maximum number of translations to return must be > 0")
   }
 
-  class GetTranslationsActionState(val state: GetTranslationsRequest) extends ActionState[GetTranslationsRequest]{
+  class GetTranslationsActionState(val state: GetTranslationsActionParams) extends ActionState[GetTranslationsActionParams]{
     def from(lang: String) = {
       requireValidFrom(lang)
       new GetTranslationsActionStateFrom(state.copy(fromLang = Some(lang)))
     }
   }
 
-  class GetTranslationsActionStateFrom(val state: GetTranslationsRequest) extends ActionState[GetTranslationsRequest]{
+  class GetTranslationsActionStateFrom(val state: GetTranslationsActionParams) extends ActionState[GetTranslationsActionParams]{
     def to(lang: String) = {
       requireValidTo(lang)
       new GetTranslationsActionStateTo(state.copy(toLang = Some(lang)))
     }
   }
 
-  class GetTranslationsActionStateTo(val state: GetTranslationsRequest) extends ActionState[GetTranslationsRequest] {
+  class GetTranslationsActionStateTo(val state: GetTranslationsActionParams) extends ActionState[GetTranslationsActionParams] {
     def withCategory(category: String) = {
       requireValidCategory(category)
       new GetTranslationsActionStateTo(state.copy(category = Some(category)))
     }
 
-    def as(scalaFutureWord: future.type)(implicit client: RemoteServiceClient): Future[String] = ???
+    def as(scalaFutureWord: future.type)(implicit client: TranslatorClient): Future[String] = ???
   }
 }
 

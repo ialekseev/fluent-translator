@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="SBT: org.simpleframework:simple:4.1.21:jar">
+    <CLASSES>
+      <root url="jar://$USER_HOME$/.ivy2/cache/org.simpleframework/simple/jars/simple-4.1.21.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>

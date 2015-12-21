@@ -1,11 +1,11 @@
 package com.smartelk.translator.actions
 
 import com.smartelk.translator.Dsl._
-import com.smartelk.translator.remote.RemoteService.RemoteServiceClient
 import scala.concurrent.Future
 
 private[translator] object SpeakAction {
-   case class SpeakRequest(text: String,
+
+  case class SpeakActionParams(text: String,
                            lang: Option[String] = None,
                            audioContentType: Option[AudioContentType] = None,
                            quality: Option[AudioQuality] = None) {
@@ -15,14 +15,14 @@ private[translator] object SpeakAction {
 
   val speakTextSizeLimit = 2000
 
-   class SpeaksActionState(val state: SpeakRequest) extends ActionState[SpeakRequest]{
+   class SpeaksActionState(val state: SpeakActionParams) extends ActionState[SpeakActionParams]{
      def in(lang: String) = {
        require(!lang.isEmpty, "Language to speak IN must not be empty")
        new SpeakActionStateIn(state.copy(lang = Some(lang)))
      }
    }
 
-   class SpeakActionStateIn(val state: SpeakRequest) extends ActionState[SpeakRequest]{
+   class SpeakActionStateIn(val state: SpeakActionParams) extends ActionState[SpeakActionParams]{
      def withAudioContentType(contentType: AudioContentType) = {
        new SpeakActionStateIn(state.copy(audioContentType = Some(contentType)))
      }
@@ -31,7 +31,7 @@ private[translator] object SpeakAction {
        new SpeakActionStateIn(state.copy(quality = Some(quality)))
      }
 
-     def as(scalaFutureWord: future.type)(implicit client: RemoteServiceClient): Future[String] = ???
+     def as(scalaFutureWord: future.type)(implicit client: TranslatorClient): Future[String] = ???
    }
  }
 

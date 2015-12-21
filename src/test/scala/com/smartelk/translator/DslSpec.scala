@@ -15,10 +15,10 @@ class DslSpec extends WordSpecLike with Matchers with MockitoSugar {
 
     "constructing TranslateRequest with valid params" should {
       "do it properly" in {
-        (Translator give me a translation of "blabla" to "ru").state should be (actions.TranslateAction.TranslateRequest("blabla", None, Some("ru"), None, None))
-        (Translator give me one translation of "blabla1" from "fr" to "en").state should be (actions.TranslateAction.TranslateRequest("blabla1", Some("fr"), Some("en"), None, None))
-        (Translator give me a translation of "blabla2" from "en" to "fr" withContentType `text/html` withCategory "general").state should be (actions.TranslateAction.TranslateRequest("blabla2", Some("en"), Some("fr"), Some(`text/html`), Some("general")))
-        (Translator give me one translation of "blabla2" from "en" to "fr" withContentType `text/plain`).state should be (actions.TranslateAction.TranslateRequest("blabla2", Some("en"), Some("fr"), Some(`text/plain`)))
+        (Translator give me a translation of "blabla" to "ru").state should be (actions.TranslateAction.TranslateActionParams("blabla", None, Some("ru"), None, None))
+        (Translator give me one translation of "blabla1" from "fr" to "en").state should be (actions.TranslateAction.TranslateActionParams("blabla1", Some("fr"), Some("en"), None, None))
+        (Translator give me a translation of "blabla2" from "en" to "fr" withContentType `text/html` withCategory "general").state should be (actions.TranslateAction.TranslateActionParams("blabla2", Some("en"), Some("fr"), Some(`text/html`), Some("general")))
+        (Translator give me one translation of "blabla2" from "en" to "fr" withContentType `text/plain`).state should be (actions.TranslateAction.TranslateActionParams("blabla2", Some("en"), Some("fr"), Some(`text/plain`)))
       }
     }
 
@@ -36,16 +36,16 @@ class DslSpec extends WordSpecLike with Matchers with MockitoSugar {
 
     "constructing GetTranslationsRequest with valid params" should {
       "do it properly" in {
-        (Translator give me two translations of "blabla" from "fr" to "ru").state should be (actions.GetTranslationsAction.GetTranslationsRequest("blabla", 2, Some("fr"), Some("ru"), None))
-        (Translator give me three translations of "blabla1" from "fr" to "en").state should be (actions.GetTranslationsAction.GetTranslationsRequest("blabla1", 3, Some("fr"), Some("en"), None))
-        (Translator give me four translations of "blabla2" from "en" to "fr" withCategory "general").state should be (actions.GetTranslationsAction.GetTranslationsRequest("blabla2", 4,  Some("en"), Some("fr"), Some("general")))
-        (Translator give me five translations of "blabla2" from "en" to "fr" withCategory "general").state should be (actions.GetTranslationsAction.GetTranslationsRequest("blabla2", 5, Some("en"), Some("fr"), Some("general")))
-        (Translator give me six translations of "blabla2" from "en" to "fr" withCategory "general").state should be (actions.GetTranslationsAction.GetTranslationsRequest("blabla2", 6, Some("en"), Some("fr"), Some("general")))
-        (Translator give me seven translations of "blabla2" from "en" to "fr" withCategory "general").state should be (actions.GetTranslationsAction.GetTranslationsRequest("blabla2", 7, Some("en"), Some("fr"), Some("general")))
-        (Translator give me eight translations of "blabla2" from "en" to "fr" withCategory "general").state should be (actions.GetTranslationsAction.GetTranslationsRequest("blabla2", 8, Some("en"), Some("fr"), Some("general")))
-        (Translator give me nine translations of "blabla2" from "en" to "fr" withCategory "general").state should be (actions.GetTranslationsAction.GetTranslationsRequest("blabla2", 9, Some("en"), Some("fr"), Some("general")))
-        (Translator give me ten translations of "blabla2" from "en" to "fr" withCategory "general").state should be (actions.GetTranslationsAction.GetTranslationsRequest("blabla2", 10, Some("en"), Some("fr"), Some("general")))
-        (Translator give me translations(15) of "blabla" from "fr" to "ru").state should be (actions.GetTranslationsAction.GetTranslationsRequest("blabla", 15, Some("fr"), Some("ru"), None))
+        (Translator give me two translations of "blabla" from "fr" to "ru").state should be (actions.GetTranslationsAction.GetTranslationsActionParams("blabla", 2, Some("fr"), Some("ru"), None))
+        (Translator give me three translations of "blabla1" from "fr" to "en").state should be (actions.GetTranslationsAction.GetTranslationsActionParams("blabla1", 3, Some("fr"), Some("en"), None))
+        (Translator give me four translations of "blabla2" from "en" to "fr" withCategory "general").state should be (actions.GetTranslationsAction.GetTranslationsActionParams("blabla2", 4,  Some("en"), Some("fr"), Some("general")))
+        (Translator give me five translations of "blabla2" from "en" to "fr" withCategory "general").state should be (actions.GetTranslationsAction.GetTranslationsActionParams("blabla2", 5, Some("en"), Some("fr"), Some("general")))
+        (Translator give me six translations of "blabla2" from "en" to "fr" withCategory "general").state should be (actions.GetTranslationsAction.GetTranslationsActionParams("blabla2", 6, Some("en"), Some("fr"), Some("general")))
+        (Translator give me seven translations of "blabla2" from "en" to "fr" withCategory "general").state should be (actions.GetTranslationsAction.GetTranslationsActionParams("blabla2", 7, Some("en"), Some("fr"), Some("general")))
+        (Translator give me eight translations of "blabla2" from "en" to "fr" withCategory "general").state should be (actions.GetTranslationsAction.GetTranslationsActionParams("blabla2", 8, Some("en"), Some("fr"), Some("general")))
+        (Translator give me nine translations of "blabla2" from "en" to "fr" withCategory "general").state should be (actions.GetTranslationsAction.GetTranslationsActionParams("blabla2", 9, Some("en"), Some("fr"), Some("general")))
+        (Translator give me ten translations of "blabla2" from "en" to "fr" withCategory "general").state should be (actions.GetTranslationsAction.GetTranslationsActionParams("blabla2", 10, Some("en"), Some("fr"), Some("general")))
+        (Translator give me translations(15) of "blabla" from "fr" to "ru").state should be (actions.GetTranslationsAction.GetTranslationsActionParams("blabla", 15, Some("fr"), Some("ru"), None))
       }
     }
 
@@ -65,11 +65,11 @@ class DslSpec extends WordSpecLike with Matchers with MockitoSugar {
 
     "constructing SpeakRequest with valid params" should {
       "do it properly" in {
-        (Translator speak "blabla" in "en").state should be(actions.SpeakAction.SpeakRequest("blabla", Some("en"), None))
-        (Translator speak "super" in "ru" withAudioContentType `audio/wav`).state should be(actions.SpeakAction.SpeakRequest("super", Some("ru"), Some(`audio/wav`)))
-        (Translator speak "super" in "en" withAudioContentType `audio/mp3`).state should be(actions.SpeakAction.SpeakRequest("super", Some("en"), Some(`audio/mp3`)))
-        (Translator speak "super" in "en" withQuality MaxQuality).state should be(actions.SpeakAction.SpeakRequest("super", Some("en"), None, Some(MaxQuality)))
-        (Translator speak "super" in "en" withQuality MinSize).state should be(actions.SpeakAction.SpeakRequest("super", Some("en"), None, Some(MinSize)))
+        (Translator speak "blabla" in "en").state should be(actions.SpeakAction.SpeakActionParams("blabla", Some("en"), None))
+        (Translator speak "super" in "ru" withAudioContentType `audio/wav`).state should be(actions.SpeakAction.SpeakActionParams("super", Some("ru"), Some(`audio/wav`)))
+        (Translator speak "super" in "en" withAudioContentType `audio/mp3`).state should be(actions.SpeakAction.SpeakActionParams("super", Some("en"), Some(`audio/mp3`)))
+        (Translator speak "super" in "en" withQuality MaxQuality).state should be(actions.SpeakAction.SpeakActionParams("super", Some("en"), None, Some(MaxQuality)))
+        (Translator speak "super" in "en" withQuality MinSize).state should be(actions.SpeakAction.SpeakActionParams("super", Some("en"), None, Some(MinSize)))
       }
     }
 

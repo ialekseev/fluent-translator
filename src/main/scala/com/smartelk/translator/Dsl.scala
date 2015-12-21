@@ -1,16 +1,19 @@
 package com.smartelk.translator
 
-import com.smartelk.translator.actions.GetTranslationsAction.{GetTranslationsActionState, GetTranslationsRequest}
-import com.smartelk.translator.actions.SpeakAction.{SpeaksActionState, SpeakRequest}
+import akka.actor.{Props, ActorSystem}
+import com.smartelk.translator.actions.GetTranslationsAction.{GetTranslationsActionState, GetTranslationsActionParams}
+import com.smartelk.translator.actions.SpeakAction.{SpeaksActionState, SpeakActionParams}
 import com.smartelk.translator.actions.{ActionState, InitialActionState, TranslateAction}
 import TranslateAction._
-import com.smartelk.translator.remote.RemoteService.RemoteServiceClientImpl
+import com.smartelk.translator.remote.HttpClient.HttpClientImpl
+import com.smartelk.translator.remote.RemoteServiceClient.RemoteServiceClientImpl
+import com.smartelk.translator.remote.TokenProviderActor.TokenProviderActor
 
 object Dsl {
 
   object Translator {
     def give(meWord: me.type) = new GiveActionState
-    def speak(text: String) = new SpeaksActionState(new SpeakRequest(text))
+    def speak(text: String) = new SpeaksActionState(new SpeakActionParams(text))
   }
 
   object one
@@ -39,11 +42,11 @@ object Dsl {
   }
 
   class OneTranslationActionState extends InitialActionState {
-    def of(text: String) = new TranslateActionState(TranslateRequest(text))
+    def of(text: String) = new TranslateActionState(TranslateActionParams(text))
   }
 
   class ManyTranslationsActionState(val state: Int) extends ActionState[Int] {
-    def of(text: String) = new GetTranslationsActionState(GetTranslationsRequest(text, maxTranslations = state))
+    def of(text: String) = new GetTranslationsActionState(GetTranslationsActionParams(text, maxTranslations = state))
   }
 
   trait TextContentType
@@ -58,5 +61,13 @@ object Dsl {
   case object MaxQuality extends AudioQuality
   case object MinSize extends AudioQuality
 
-  type TranslatorClient = RemoteServiceClientImpl
+  val translatorActorSystem = ActorSystem("microsoft-translator-scala-api")
+
+  trait TranslatorClient {
+    val clientId: String
+    val clientSecret: String
+    lazy val httpClient = new HttpClientImpl
+    lazy val tokenProviderActor = translatorActorSystem.actorOf(Props(new TokenProviderActor(clientId, clientSecret, httpClient)))
+    lazy val remoteServiceClient = new RemoteServiceClientImpl(clientId, clientSecret, tokenProviderActor, httpClient)
+  }
 }
