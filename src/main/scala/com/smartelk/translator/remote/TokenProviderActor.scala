@@ -1,54 +1,56 @@
 package com.smartelk.translator.remote
 
 import akka.actor.{Status, Actor}
-import com.smartelk.translator.remote.HttpClient.HttpClient
+import com.smartelk.translator.remote.HttpClient._
 import org.json4s.DefaultFormats
 import org.json4s.native.JsonMethods._
 import scala.util.{Failure, Success, Try}
 
 private[translator] object TokenProviderActor {
+  val requestAccessTokenUri = "https://datamarket.accesscontrol.windows.net/v2/OAuth2-13"
 
-  class TokenProviderActor(clientId: String, clientSecret: String, val httpClient: HttpClient) extends Actor {
+  class TokenProviderActor(clientId: String, clientSecret: String, httpClient: HttpClient) extends Actor {
     implicit val json4sFormats = DefaultFormats
-    val requestAccessTokenUri = "https://datamarket.accesscontrol.windows.net/v2/OAuth2-13"
-    type Token = (Long, String)
-    private var token: Token = (0L, "")
+    private var token = Token("", 0L)
+    def getCurrentTimeMillis = System.currentTimeMillis()
 
     private def getToken(): Try[Token] =  {
-      if (System.currentTimeMillis() > token._1) {
-        val now = System.currentTimeMillis()
+      val now = getCurrentTimeMillis
+      if (now > token.expiresMillis) {
         for {
-          response <- Try {
-            httpClient.post(requestAccessTokenUri, Seq("grant_type" -> "client_credentials",
+          response <- httpClient.post(requestAccessTokenUri, Seq(
+              "grant_type" -> "client_credentials",
               "client_id" -> clientId,
               "client_secret" -> clientSecret,
-              "scope" -> "http://api.microsofttranslator.com"))
-          }
+              "scope" -> "http://api.microsofttranslator.com"), Seq())
           newToken <- response match {
-            case (true, value) => {
+            case SuccessHttpResponse(value) => Try {
               val newTokenJson = parse(value)
               val accessToken = (newTokenJson \ "access_token").extract[String]
               val expiresIn = (newTokenJson \ "expires_in").extract[Long]
-              Success(now + expiresIn, accessToken)
+              Token(accessToken, now + expiresIn)
             }
-            case (false, message) => Failure(new Exception(s"Remote service returned a problem: $message"))
+            case ErrorHttpResponse(problem) => Failure(new RuntimeException(s"Remote service returned a problem: $problem"))
           }
         } yield newToken
       }
-      Success(token)
+      else {
+        Success(token)
+      }
     }
 
     override def receive: Receive = {
       case TokenRequestMessage => getToken() match {
         case Success(gottenToken) =>{
           token = gottenToken
-          sender ! Status.Success(token._2)
+          sender ! token
         }
         case Failure(e) =>  sender ! Status.Failure(e)
       }
     }
   }
 
+  case class Token(accessToken: String, expiresMillis: Long)
   case object TokenRequestMessage
 }
 
