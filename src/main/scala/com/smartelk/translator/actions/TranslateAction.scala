@@ -1,6 +1,7 @@
 package com.smartelk.translator.actions
 
 import com.smartelk.translator.Dsl._
+import com.smartelk.translator.remote.RemoteServiceClient.TranslateRequest
 import scala.concurrent.Future
 
 private[translator] object TranslateAction {
@@ -41,7 +42,9 @@ private[translator] object TranslateAction {
       new TranslateActionStateTo(state.copy(category = Some(category)))
     }
 
-    def as(scalaFutureWord: future.type)(implicit client: TranslatorClient): Future[String] = ???
+    def as(scalaFutureWord: future.type)(implicit client: TranslatorClient): Future[String] = {
+      client.remoteServiceClient.translate(TranslateRequest(state.text, state.toLang.get, state.fromLang, state.contentType.map(_.toString), state.category))
+    }
   }
 }
 

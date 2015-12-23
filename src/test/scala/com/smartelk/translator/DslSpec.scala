@@ -1,14 +1,20 @@
 package com.smartelk.translator
 
 import com.smartelk.translator.Dsl._
+import com.smartelk.translator.remote.RemoteServiceClient.{TranslateRequest, RemoteServiceClient}
+import org.mockito.Mockito._
+import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.mock.MockitoSugar
 import org.scalatest.{Matchers, WordSpecLike}
+import scala.concurrent.Future
 import scala.util.Random
 
-class DslSpec extends WordSpecLike with Matchers with MockitoSugar {
+class DslSpec extends WordSpecLike with Matchers with MockitoSugar with ScalaFutures {
+  val serviceClient = mock[RemoteServiceClient]
   implicit object client extends TranslatorClient {
     val clientId = "my-client-id"
     val clientSecret = "my-client-secret"
+    override lazy val remoteServiceClient = serviceClient
   }
 
   "TranslateAction" when {
@@ -28,6 +34,32 @@ class DslSpec extends WordSpecLike with Matchers with MockitoSugar {
         the [IllegalArgumentException] thrownBy (Translator give me one translation of Random.nextString(10001)) should have message s"requirement failed: The size of text to be translated must not exceed ${actions.textSizeLimit} characters"
         the [IllegalArgumentException] thrownBy (Translator give me a translation of "blabla" from "") should have message "requirement failed: Language to translate FROM must not be empty"
         the [IllegalArgumentException] thrownBy (Translator give me one translation of "blabla" from "en" to "") should have message "requirement failed: Language to translate TO must not be empty"
+      }
+    }
+
+    "constructing TranslateRequest with valid params as future" should {
+     "1)call remote service client and get a translation" in {
+       //arrange
+       when(serviceClient.translate(TranslateRequest("blabla", "ru", None, None, None))).thenReturn(Future.successful("ablabl"))
+
+       //act
+       whenReady(Translator give me a translation of "blabla" to "ru" as future){res =>
+
+         //assert
+         res should be ("ablabl")
+       }
+     }
+
+      "2)call remote service client and get a translation" in {
+        //arrange
+        when(serviceClient.translate(TranslateRequest("blabla", "ru", Some("en"), Some("text/html"), Some("default")))).thenReturn(Future.successful("ablabl"))
+
+        //act
+        whenReady(Translator give me a translation of "blabla" from "en" to "ru" withContentType `text/html` withCategory "default" as future){res =>
+
+          //assert
+          res should be ("ablabl")
+        }
       }
     }
   }

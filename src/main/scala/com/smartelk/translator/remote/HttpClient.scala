@@ -1,32 +1,36 @@
 package com.smartelk.translator.remote
 
 import scala.util.Try
-import scalaj.http.{HttpResponse, Http}
+import scalaj.http.{HttpRequest, Http}
 
 private[translator] object HttpClient {
 
   type Response = (Boolean, String)
   type KeyValueSeq = Seq[(String, String)]
+  trait ParamsSeq
 
   trait HttpClient {
     def post(uri: String, params: KeyValueSeq, headers: KeyValueSeq): Try[Response]
     def get(uri: String, params: KeyValueSeq, headers: KeyValueSeq): Try[Response]
   }
 
-  class HttpClientImpl extends HttpClient {
+  class HttpClientImpl(connTimeoutMillis: Int, readTimeoutMillis: Int, proxy: Option[java.net.Proxy]) extends HttpClient {
+
     def post(uri: String, params: KeyValueSeq, headers: KeyValueSeq): Try[Response] = {
       require(!uri.isEmpty)
-      go(() => Http(uri).headers(headers).postForm(params).asString)
+      go(Http(uri).headers(headers).postForm(params))
     }
 
 
     def get(uri: String, params: KeyValueSeq, headers: KeyValueSeq): Try[Response] = {
       require(!uri.isEmpty)
-      go(() => Http(uri).headers(headers).params(params).asString)
+      go(Http(uri).headers(headers).params(params))
     }
 
-    def go(doRequest: ()=> HttpResponse[String]): Try[Response] = Try {
-      val result = doRequest()
+    def go(request: HttpRequest): Try[Response] = Try {
+      val withTimeouts = request.timeout(connTimeoutMs = connTimeoutMillis, readTimeoutMs = readTimeoutMillis)
+      val withProxy = proxy.map(withTimeouts.proxy(_)).getOrElse(withTimeouts)
+      val result = withProxy.asString
       (result.is2xx, result.body)
     }
   }

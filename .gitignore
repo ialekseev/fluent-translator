@@ -10,3 +10,6 @@
 
 #OSX specific
 .DS_Store
+
+#project specific
+/src/test/resources/playground.conf

@@ -2,15 +2,12 @@ package com.smartelk.translator.remote
 
 import akka.actor.{Status, Actor}
 import com.smartelk.translator.remote.HttpClient._
-import org.json4s.DefaultFormats
 import org.json4s.native.JsonMethods._
 import scala.util.{Failure, Success, Try}
 
 private[translator] object TokenProviderActor {
-  val requestAccessTokenUri = "https://datamarket.accesscontrol.windows.net/v2/OAuth2-13"
 
   class TokenProviderActor(clientId: String, clientSecret: String, httpClient: HttpClient) extends Actor {
-    implicit val json4sFormats = DefaultFormats
     private var token = Token("", 0L)
     def getCurrentTimeMillis = System.currentTimeMillis()
 

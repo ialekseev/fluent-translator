@@ -5,8 +5,8 @@ import com.smartelk.translator.actions.GetTranslationsAction.{GetTranslationsAct
 import com.smartelk.translator.actions.SpeakAction.{SpeaksActionState, SpeakActionParams}
 import com.smartelk.translator.actions.{ActionState, InitialActionState, TranslateAction}
 import TranslateAction._
-import com.smartelk.translator.remote.HttpClient.HttpClientImpl
-import com.smartelk.translator.remote.RemoteServiceClient.RemoteServiceClientImpl
+import com.smartelk.translator.remote.HttpClient._
+import com.smartelk.translator.remote.RemoteServiceClient.{RemoteServiceClient, RemoteServiceClientImpl}
 import com.smartelk.translator.remote.TokenProviderActor.TokenProviderActor
 
 object Dsl {
@@ -63,11 +63,17 @@ object Dsl {
 
   val translatorActorSystem = ActorSystem("microsoft-translator-scala-api")
 
+  type TranslatorHttpClient = HttpClientImpl
   trait TranslatorClient {
     val clientId: String
     val clientSecret: String
-    lazy val httpClient = new HttpClientImpl
+
+    val connTimeoutMillis = 1000
+    val readTimeoutMillis = 5000
+    val proxy: Option[java.net.Proxy] = None
+    lazy val tokenRequestTimeoutMillis = readTimeoutMillis + 1000
+    lazy val httpClient: HttpClient = new HttpClientImpl(connTimeoutMillis, readTimeoutMillis, proxy)
     lazy val tokenProviderActor = translatorActorSystem.actorOf(Props(new TokenProviderActor(clientId, clientSecret, httpClient)))
-    lazy val remoteServiceClient = new RemoteServiceClientImpl(clientId, clientSecret, tokenProviderActor, httpClient)
+    lazy val remoteServiceClient: RemoteServiceClient = new RemoteServiceClientImpl(clientId, clientSecret, tokenProviderActor, tokenRequestTimeoutMillis, httpClient)
   }
 }
