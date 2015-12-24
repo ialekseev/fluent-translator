@@ -16,28 +16,18 @@ object Dsl {
     def speak(text: String) = new SpeaksActionState(new SpeakActionParams(text))
   }
 
-  object one
-  object a
-  object many
-  object of
   object me
   object translation
-  object translations
   object future
+  object translations
+
+  val defaultManyTranslations = 100
 
   class GiveActionState extends InitialActionState {
     import Dsl.{translations => Translations}
     def a(translationWord: translation.type) = new OneTranslationActionState
     def one(translationWord: translation.type) = new OneTranslationActionState
-    def two(translationsWord: Translations.type) = new ManyTranslationsActionState(2)
-    def three(translationsWord: Translations.type) = new ManyTranslationsActionState(3)
-    def four(translationsWord: Translations.type) = new ManyTranslationsActionState(4)
-    def five(translationsWord: Translations.type) = new ManyTranslationsActionState(5)
-    def six(translationsWord: Translations.type) = new ManyTranslationsActionState(6)
-    def seven(translationsWord: Translations.type) = new ManyTranslationsActionState(7)
-    def eight(translationsWord: Translations.type) = new ManyTranslationsActionState(8)
-    def nine(translationsWord: Translations.type) = new ManyTranslationsActionState(9)
-    def ten(translationsWord: Translations.type) = new ManyTranslationsActionState(10)
+    def many(translationsWord: Translations.type) = new ManyTranslationsActionState(defaultManyTranslations)
     def translations(max: Int) = new ManyTranslationsActionState(max)
   }
 

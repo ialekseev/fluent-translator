@@ -9,6 +9,7 @@ import scala.concurrent.ExecutionContext.Implicits._
 package object remote {
   val requestAccessTokenUri = "https://datamarket.accesscontrol.windows.net/v2/OAuth2-13"
   val translateUri = "http://api.microsofttranslator.com/V2/Http.svc/Translate"
+  val getTranslationsUri = "http://api.microsofttranslator.com/V2/Http.svc/GetTranslations"
 
   object StringToLong extends CustomSerializer[Long](format => ({ case JString(x) => x.toLong }, { case x: Long => JLong(x) }))
   implicit val json4sFormats = DefaultFormats + StringToLong
