@@ -12,8 +12,8 @@ private[translator] object TokenProviderActor {
     def getCurrentTimeMillis = System.currentTimeMillis()
 
     private def getToken(): Try[Token] =  {
-      val now = getCurrentTimeMillis
-      if (now > token.expiresMillis) {
+      val nowMillis = getCurrentTimeMillis
+      if (nowMillis > token.expiresMillis) {
         for {
           response <- httpClient.post(HttpClientBasicRequest(requestAccessTokenUri), Seq(
               "grant_type" -> "client_credentials",
@@ -24,8 +24,9 @@ private[translator] object TokenProviderActor {
             case SuccessHttpResponse(value) => Try {
               val newTokenJson = parse(value)
               val accessToken = (newTokenJson \ "access_token").extract[String]
-              val expiresIn = (newTokenJson \ "expires_in").extract[Long]
-              Token(accessToken, now + expiresIn)
+              val expiresInSeconds = (newTokenJson \ "expires_in").extract[Long]
+              val expiresInMillis = expiresInSeconds * 1000
+              Token(accessToken, nowMillis + expiresInMillis - tokenExpirationDeltaInMillis)
             }
             case ErrorHttpResponse(problem) => Failure(new RuntimeException(s"Remote service returned a problem: $problem"))
           }

@@ -78,7 +78,7 @@ class TokenProviderActorSpec(system: ActorSystem) extends TestKit(system) with I
         actor ! TokenRequestMessage
 
         //assert
-        expectMsgType[Token] should be (Token("123abc", 2001 + 1001))
+        expectMsgType[Token] should be (Token("123abc", 2001 + 1001 * 1000 - tokenExpirationDeltaInMillis))
       }
     }
   }
@@ -91,18 +91,18 @@ class TokenProviderActorSpec(system: ActorSystem) extends TestKit(system) with I
         val actor = system.actorOf(Props(new TokenProviderActor("my-client-id", "my-client-secret", httpClient){
           override def getCurrentTimeMillis = currentTime
         }))
-        when(httpClient.post(HttpClientBasicRequest(requestAccessTokenUri), params)).thenReturn(Success(SuccessHttpResponse("""{"access_token": "123abc", "expires_in": "1000"}""")))
+        when(httpClient.post(HttpClientBasicRequest(requestAccessTokenUri), params)).thenReturn(Success(SuccessHttpResponse("""{"access_token": "123abc", "expires_in": "600"}""")))
         actor ! TokenRequestMessage
-        expectMsgType[Token] should be (Token("123abc", 2000 + 1000))
+        expectMsgType[Token] should be (Token("123abc", 2000 + 600 * 1000 - tokenExpirationDeltaInMillis))
 
-        currentTime =  2999
+        currentTime =  2000 + 600 * 1000 - tokenExpirationDeltaInMillis - 1
         when(httpClient.post(HttpClientBasicRequest(requestAccessTokenUri), params)).thenReturn(Success(SuccessHttpResponse("""{"access_token": "123abc_new", "expires_in": "1000"}""")))
 
         //act
         actor ! TokenRequestMessage
 
         //assert
-        expectMsgType[Token] should be (Token("123abc", 2000 + 1000))
+        expectMsgType[Token] should be (Token("123abc", 2000 + 600 * 1000 - tokenExpirationDeltaInMillis))
         verify(httpClient, times(1)).post(any[HttpClientBasicRequest], any[Seq[(String, String)]])
       }
     }
@@ -114,18 +114,18 @@ class TokenProviderActorSpec(system: ActorSystem) extends TestKit(system) with I
         val actor = system.actorOf(Props(new TokenProviderActor("my-client-id", "my-client-secret", httpClient){
           override def getCurrentTimeMillis = currentTime
         }))
-        when(httpClient.post(HttpClientBasicRequest(requestAccessTokenUri), params)).thenReturn(Success(SuccessHttpResponse("""{"access_token": "123abc", "expires_in": "1000"}""")))
+        when(httpClient.post(HttpClientBasicRequest(requestAccessTokenUri), params)).thenReturn(Success(SuccessHttpResponse("""{"access_token": "123abc", "expires_in": "600"}""")))
         actor ! TokenRequestMessage
-        expectMsgType[Token] should be (Token("123abc", 2000 + 1000))
+        expectMsgType[Token] should be (Token("123abc", 2000 + 600 * 1000 - tokenExpirationDeltaInMillis))
 
-        currentTime =  3001
+        currentTime =  2000 + 600 * 1000 - tokenExpirationDeltaInMillis + 1
         when(httpClient.post(HttpClientBasicRequest(requestAccessTokenUri), params)).thenReturn(Success(SuccessHttpResponse("""{"access_token": "123abc_new", "expires_in": "1500"}""")))
 
         //act
         actor ! TokenRequestMessage
 
         //assert
-        expectMsgType[Token] should be (Token("123abc_new", 3001 + 1500))
+        expectMsgType[Token] should be (Token("123abc_new", currentTime + 1500 * 1000 - tokenExpirationDeltaInMillis))
       }
     }
   }

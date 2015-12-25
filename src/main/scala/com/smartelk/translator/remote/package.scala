@@ -11,6 +11,8 @@ package object remote {
   val translateUri = "http://api.microsofttranslator.com/V2/Http.svc/Translate"
   val getTranslationsUri = "http://api.microsofttranslator.com/V2/Http.svc/GetTranslations"
 
+  val tokenExpirationDeltaInMillis = 60 * 1000
+
   object StringToLong extends CustomSerializer[Long](format => ({ case JString(x) => x.toLong }, { case x: Long => JLong(x) }))
   implicit val json4sFormats = DefaultFormats + StringToLong
 
