@@ -30,7 +30,7 @@ class Playground extends WordSpecLike with Matchers with MockitoSugar with Scala
 
   "Translating" when {
 
-    "providing invalid client id" should {
+    "providing an invalid client id" should {
       "fail" in {
         implicit val client = new TranslatorClient {
           val clientId = "bad"
@@ -42,7 +42,7 @@ class Playground extends WordSpecLike with Matchers with MockitoSugar with Scala
       }
     }
 
-    "providing invalid client secret" should {
+    "providing an invalid client secret" should {
       "fail" in {
         implicit val client = new TranslatorClient {
           val clientId = playgroundClientId
@@ -54,9 +54,55 @@ class Playground extends WordSpecLike with Matchers with MockitoSugar with Scala
       }
     }
 
-    "providing valid data" should {
+    "providing jabberwocky text" should {
+      "return the same text back" in {
+        (Translator give me a translation of "qweqwuiyqweqweasdasdbmbnmqweqwenbmbanbsadsds" from "en" to "ru" as future).futureValue should be ("qweqwuiyqweqweasdasdbmbnmqweqwenbmbanbsadsds")
+      }
+    }
+
+    "providing a good text" should {
       "successfully get a translation" in {
         (Translator give me a translation of "How are you?" from "en" to "fr" as future).futureValue should be ("Comment vas-tu?")
+      }
+    }
+  }
+
+  "Getting translations" when {
+    "providing an invalid client id" should {
+      "fail" in {
+        implicit val client = new TranslatorClient {
+          val clientId = "bad"
+          val clientSecret = playgroundClientSecret
+          override val proxy = playgroundProxy
+        }
+
+        (the [RuntimeException] thrownBy (Translator give me many translations of "How are you?" from "en" to "fr" as future).futureValue).getMessage.contains("invalid_client") should be (true)
+      }
+    }
+
+    "providing an invalid client secret" should {
+      "fail" in {
+        implicit val client = new TranslatorClient {
+          val clientId = playgroundClientId
+          val clientSecret = "bad"
+          override val proxy = playgroundProxy
+        }
+
+        (the [RuntimeException] thrownBy (Translator give me translations(10) of "How are you?" from "en" to "fr" as future).futureValue).getMessage.contains("invalid_client") should be (true)
+      }
+    }
+
+    "providing jabberwocky text" should {
+      "return the same text back" in {
+        val result = (Translator give me many translations of "qweqwuiyqweqweasdasdbmbnmqweqwenbmbanbsadsds" from "en" to "ru" as future).futureValue
+        result.translations.length should be > 0
+        result.translations(0).translation should be ("qweqwuiyqweqweasdasdbmbnmqweqwenbmbanbsadsds")
+      }
+    }
+
+    "providing a good text" should {
+      "successfully get translations" in {
+        (Translator give me many translations of "How are you?" from "en" to "ru" as future).futureValue.translations.length should be > 0
       }
     }
   }

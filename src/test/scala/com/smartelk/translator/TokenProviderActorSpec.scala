@@ -3,7 +3,7 @@ package com.smartelk.translator
 import akka.actor.{Status, ActorSystem, Props}
 import akka.testkit.{ImplicitSender, TestKit}
 import com.smartelk.translator.remote._
-import com.smartelk.translator.remote.HttpClient.{SuccessHttpResponse, ErrorHttpResponse, HttpClient}
+import com.smartelk.translator.remote.HttpClient.{HttpClientBasicRequest, SuccessHttpResponse, ErrorHttpResponse, HttpClient}
 import com.smartelk.translator.remote.TokenProviderActor.{Token, TokenRequestMessage, TokenProviderActor}
 import org.json4s.ParserUtil.ParseException
 import org.scalatest.mock.MockitoSugar
@@ -28,7 +28,7 @@ class TokenProviderActorSpec(system: ActorSystem) extends TestKit(system) with I
       "fail with that exception" in {
         //arrange
         val actor = system.actorOf(Props(new TokenProviderActor("my-client-id", "my-client-secret", httpClient)))
-        when(httpClient.post(requestAccessTokenUri, params, Seq())).thenReturn(Failure(new RuntimeException("Can't connect")))
+        when(httpClient.post(HttpClientBasicRequest(requestAccessTokenUri), params)).thenReturn(Failure(new RuntimeException("Can't connect")))
 
         //act
         actor ! TokenRequestMessage
@@ -42,7 +42,7 @@ class TokenProviderActorSpec(system: ActorSystem) extends TestKit(system) with I
       "fail with an exception" in {
         //arrange
         val actor = system.actorOf(Props(new TokenProviderActor("my-client-id", "my-client-secret", httpClient)))
-        when(httpClient.post(requestAccessTokenUri, params, Seq())).thenReturn(Success(ErrorHttpResponse("Error!")))
+        when(httpClient.post(HttpClientBasicRequest(requestAccessTokenUri), params)).thenReturn(Success(ErrorHttpResponse("Error!")))
 
         //act
         actor ! TokenRequestMessage
@@ -56,7 +56,7 @@ class TokenProviderActorSpec(system: ActorSystem) extends TestKit(system) with I
       "fail with ParseException" in {
         //arrange
         val actor = system.actorOf(Props(new TokenProviderActor("my-client-id", "my-client-secret", httpClient)))
-        when(httpClient.post(requestAccessTokenUri, params, Seq())).thenReturn(Success(SuccessHttpResponse("Bad json")))
+        when(httpClient.post(HttpClientBasicRequest(requestAccessTokenUri), params)).thenReturn(Success(SuccessHttpResponse("Bad json")))
 
         //act
         actor ! TokenRequestMessage
@@ -72,7 +72,7 @@ class TokenProviderActorSpec(system: ActorSystem) extends TestKit(system) with I
         val actor = system.actorOf(Props(new TokenProviderActor("my-client-id", "my-client-secret", httpClient){
           override def getCurrentTimeMillis = 2001
         }))
-        when(httpClient.post(requestAccessTokenUri, params, Seq())).thenReturn(Success(SuccessHttpResponse("""{"access_token": "123abc", "expires_in": "1001"}""")))
+        when(httpClient.post(HttpClientBasicRequest(requestAccessTokenUri), params)).thenReturn(Success(SuccessHttpResponse("""{"access_token": "123abc", "expires_in": "1001"}""")))
 
         //act
         actor ! TokenRequestMessage
@@ -91,19 +91,19 @@ class TokenProviderActorSpec(system: ActorSystem) extends TestKit(system) with I
         val actor = system.actorOf(Props(new TokenProviderActor("my-client-id", "my-client-secret", httpClient){
           override def getCurrentTimeMillis = currentTime
         }))
-        when(httpClient.post(requestAccessTokenUri, params, Seq())).thenReturn(Success(SuccessHttpResponse("""{"access_token": "123abc", "expires_in": "1000"}""")))
+        when(httpClient.post(HttpClientBasicRequest(requestAccessTokenUri), params)).thenReturn(Success(SuccessHttpResponse("""{"access_token": "123abc", "expires_in": "1000"}""")))
         actor ! TokenRequestMessage
         expectMsgType[Token] should be (Token("123abc", 2000 + 1000))
 
         currentTime =  2999
-        when(httpClient.post(requestAccessTokenUri, params, Seq())).thenReturn(Success(SuccessHttpResponse("""{"access_token": "123abc_new", "expires_in": "1000"}""")))
+        when(httpClient.post(HttpClientBasicRequest(requestAccessTokenUri), params)).thenReturn(Success(SuccessHttpResponse("""{"access_token": "123abc_new", "expires_in": "1000"}""")))
 
         //act
         actor ! TokenRequestMessage
 
         //assert
         expectMsgType[Token] should be (Token("123abc", 2000 + 1000))
-        verify(httpClient, times(1)).post(any[String], any[Seq[(String, String)]], any[Seq[(String, String)]])
+        verify(httpClient, times(1)).post(any[HttpClientBasicRequest], any[Seq[(String, String)]])
       }
     }
 
@@ -114,12 +114,12 @@ class TokenProviderActorSpec(system: ActorSystem) extends TestKit(system) with I
         val actor = system.actorOf(Props(new TokenProviderActor("my-client-id", "my-client-secret", httpClient){
           override def getCurrentTimeMillis = currentTime
         }))
-        when(httpClient.post(requestAccessTokenUri, params, Seq())).thenReturn(Success(SuccessHttpResponse("""{"access_token": "123abc", "expires_in": "1000"}""")))
+        when(httpClient.post(HttpClientBasicRequest(requestAccessTokenUri), params)).thenReturn(Success(SuccessHttpResponse("""{"access_token": "123abc", "expires_in": "1000"}""")))
         actor ! TokenRequestMessage
         expectMsgType[Token] should be (Token("123abc", 2000 + 1000))
 
         currentTime =  3001
-        when(httpClient.post(requestAccessTokenUri, params, Seq())).thenReturn(Success(SuccessHttpResponse("""{"access_token": "123abc_new", "expires_in": "1500"}""")))
+        when(httpClient.post(HttpClientBasicRequest(requestAccessTokenUri), params)).thenReturn(Success(SuccessHttpResponse("""{"access_token": "123abc_new", "expires_in": "1500"}""")))
 
         //act
         actor ! TokenRequestMessage

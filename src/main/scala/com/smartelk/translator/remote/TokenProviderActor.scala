@@ -15,11 +15,11 @@ private[translator] object TokenProviderActor {
       val now = getCurrentTimeMillis
       if (now > token.expiresMillis) {
         for {
-          response <- httpClient.post(requestAccessTokenUri, Seq(
+          response <- httpClient.post(HttpClientBasicRequest(requestAccessTokenUri), Seq(
               "grant_type" -> "client_credentials",
               "client_id" -> clientId,
               "client_secret" -> clientSecret,
-              "scope" -> "http://api.microsofttranslator.com"), Seq())
+              "scope" -> "http://api.microsofttranslator.com"))
           newToken <- response match {
             case SuccessHttpResponse(value) => Try {
               val newTokenJson = parse(value)

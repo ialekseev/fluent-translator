@@ -27,9 +27,9 @@ private[translator] object RemoteServiceClient {
       require(r.contentType.isEmpty || !r.contentType.get.isEmpty)
       require(r.category.isEmpty || !r.category.get.isEmpty)
 
-     call(translateUri)(httpClient.get) {
-        Seq("text" -> r.text, "to" -> r.to) ++: fromOption(r.from, "from") ++: fromOption(r.contentType, "contentType") ++: fromOption(r.category, "category")
-      }.map(XML.loadString(_).text)
+     call(httpClient.get)(HttpClientBasicRequest(translateUri,
+       Seq("text" -> r.text, "to" -> r.to) ++: fromOption(r.from, "from") ++: fromOption(r.contentType, "contentType") ++: fromOption(r.category, "category")
+      )).map(XML.loadString(_).text)
      }
 
     def getTranslations(r: GetTranslationsRequest): Future[GetTranslationsResponse] = {
@@ -39,21 +39,33 @@ private[translator] object RemoteServiceClient {
       require(!r.to.isEmpty)
       require(r.category.isEmpty || !r.category.get.isEmpty)
 
-      call(getTranslationsUri)(httpClient.post) {
-        Seq("text" -> r.text, "from" -> r.from, "to" -> r.to, "maxTranslations" -> r.maxTranslations.toString) ++:
-          fromOption(r.category.map(c => (xml.Utility.trim(
-            <TranslateOptions xmlns="http://schemas.datacontract.org/2004/07/Microsoft.MT.Web.Service.V2">
-              <Category>{c}</Category>
-            </TranslateOptions>)).buildString(true)), "options")
-      }.map(r => GetTranslationsResponse((XML.loadString(r) \ "Translations" \ "TranslationMatch").map(t =>
-            TranslationMatch((t \ "TranslatedText").text, (t \ "MatchDegree").text.toInt, (t \ "Rating").text.toInt, (t \ "Count").text.toInt)))
-      )
+      val body = xml.Utility.trim(
+      <TranslateOptions xmlns="http://schemas.datacontract.org/2004/07/Microsoft.MT.Web.Service.V2">
+        <Category>{r.category.getOrElse("")}</Category>
+        <ContentType/>
+        <ReservedFlags/>
+        <State/>
+        <Uri/>
+        <User/>
+      </TranslateOptions>).buildString(true)
+
+      for {
+        response <- call(httpClient.post(_, body))(HttpClientBasicRequest(getTranslationsUri,
+          Seq("text" -> r.text, "from" -> r.from, "to" -> r.to, "maxTranslations" -> r.maxTranslations.toString), Seq("content-type" -> "text/xml")))
+        translationsXml = XML.loadString(response) \ "Translations"
+        translationMatchesXml <- {
+          if (translationsXml.size > 0) Future.successful(translationsXml \ "TranslationMatch")
+          else Future.failed(new RuntimeException(s"Remote service returned bad XML: $response"))
+        }
+        translations = translationMatchesXml.map(t =>
+          TranslationMatch((t \ "TranslatedText").text, (t \ "MatchDegree").text.toInt, (t \ "Rating").text.toInt, (t \ "Count").text.toInt))
+      } yield GetTranslationsResponse(translations)
     }
 
-    private def call(uri: String)(func: (String, KeyValueSeq, KeyValueSeq) => Try[Response])(params: KeyValueSeq): Future[String] = {
+    private def call(func: HttpClientBasicRequest => Try[Response])(r: HttpClientBasicRequest): Future[String] = {
       (tokenProviderActor ? TokenRequestMessage).flatMap {
         case Token(accessToken, _) => {
-          tryToFuture(func(uri, params, Seq("Authorization" -> ("Bearer " + accessToken)))).flatMap {
+          tryToFuture(func(r.copy(headers = Seq("Authorization" -> ("Bearer " + accessToken)) ++: r.headers))).flatMap {
             case SuccessHttpResponse(result) => Future.successful(result)
             case ErrorHttpResponse(problem) => Future.failed(new RuntimeException(s"Remote service returned a problem: $problem"))
           }

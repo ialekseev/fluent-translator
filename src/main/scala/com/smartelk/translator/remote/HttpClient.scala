@@ -10,21 +10,27 @@ private[translator] object HttpClient {
   trait ParamsSeq
 
   trait HttpClient {
-    def post(uri: String, params: KeyValueSeq, headers: KeyValueSeq): Try[Response]
-    def get(uri: String, params: KeyValueSeq, headers: KeyValueSeq): Try[Response]
+    def post(r: HttpClientBasicRequest, body: KeyValueSeq = Seq()): Try[Response]
+    def post(r: HttpClientBasicRequest, body: String): Try[Response]
+    def get(r: HttpClientBasicRequest): Try[Response]
   }
 
   class HttpClientImpl(connTimeoutMillis: Int, readTimeoutMillis: Int, proxy: Option[java.net.Proxy]) extends HttpClient {
 
-    def post(uri: String, params: KeyValueSeq, headers: KeyValueSeq): Try[Response] = {
-      require(!uri.isEmpty)
-      go(Http(uri).headers(headers).postForm(params))
+    def post(r: HttpClientBasicRequest, body: KeyValueSeq = Seq()): Try[Response] = {
+      require(!r.uri.isEmpty)
+      go(Http(r.uri).headers(r.headers).params(r.queryString).postForm(body))
     }
 
+    def post(r: HttpClientBasicRequest, body: String): Try[Response] = {
+      require(!r.uri.isEmpty)
+      require(!body.isEmpty)
+      go(Http(r.uri).headers(r.headers).params(r.queryString).postData(body))
+    }
 
-    def get(uri: String, params: KeyValueSeq, headers: KeyValueSeq): Try[Response] = {
-      require(!uri.isEmpty)
-      go(Http(uri).headers(headers).params(params))
+    def get(r: HttpClientBasicRequest): Try[Response] = {
+      require(!r.uri.isEmpty)
+      go(Http(r.uri).headers(r.headers).params(r.queryString))
     }
 
     def go(request: HttpRequest): Try[Response] = Try {
@@ -34,6 +40,8 @@ private[translator] object HttpClient {
       (result.is2xx, result.body)
     }
   }
+
+  case class HttpClientBasicRequest(uri: String, queryString: KeyValueSeq = Seq(), headers: KeyValueSeq = Seq())
 
   object SuccessHttpResponse {
     def apply(value: String) = (true, value)
