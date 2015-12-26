@@ -272,4 +272,26 @@ class RemoteServiceClientSpec(system: ActorSystem) extends TestKit(system) with 
       }
     }
   }
+
+  "Speaking" when {
+    "token provider returns failure" should {
+      "fail with that failure" in {
+        //arrange
+        val actorRef = system.actorOf(Props(new Actor {
+          def receive = {
+            case TokenRequestMessage => sender ! Status.Failure(new RuntimeException("Bad!"))
+          }
+        }))
+
+        val client = new RemoteServiceClientImpl("my-client-id", "my-client-secret", actorRef, 2000, httpClient)
+
+        //act
+        whenReady(client.speak(SpeakRequest("blabla", "ru", None, None)).failed) { res =>
+
+          //assert
+          res.getMessage should be("Bad!")
+        }
+      }
+    }
+  }
 }

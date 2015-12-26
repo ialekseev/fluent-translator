@@ -18,8 +18,8 @@ object Dsl {
 
   object me
   object translation
-  object future
   object translations
+  object future
 
   val defaultManyTranslations = 100
 

@@ -19,7 +19,7 @@ class DslSpec extends WordSpecLike with Matchers with MockitoSugar with ScalaFut
 
   "TranslateAction" when {
 
-    "constructing TranslateRequest with valid params" should {
+    "constructing TranslateActionParams with valid arguments" should {
       "do it properly" in {
         (Translator give me a translation of "blabla" to "ru").state should be (actions.TranslateAction.TranslateActionParams("blabla", None, Some("ru"), None, None))
         (Translator give me one translation of "blabla1" from "fr" to "en").state should be (actions.TranslateAction.TranslateActionParams("blabla1", Some("fr"), Some("en"), None, None))
@@ -28,7 +28,7 @@ class DslSpec extends WordSpecLike with Matchers with MockitoSugar with ScalaFut
       }
     }
 
-    "constructing TranslateRequest with illegal arguments" should {
+    "constructing TranslateActionParams with illegal arguments" should {
       "throw IllegalArgumentException" in {
         the [IllegalArgumentException] thrownBy (Translator give me a translation of "") should have message s"requirement failed: Text to be translated must not be empty"
         the [IllegalArgumentException] thrownBy (Translator give me one translation of Random.nextString(10001)) should have message s"requirement failed: The size of text to be translated must not exceed ${actions.textSizeLimit} characters"
@@ -37,7 +37,7 @@ class DslSpec extends WordSpecLike with Matchers with MockitoSugar with ScalaFut
       }
     }
 
-    "constructing TranslateRequest with valid params as future" should {
+    "constructing TranslateActionParams with valid arguments as future" should {
      "1)call remote service client and get a translation" in {
        //arrange
        when(serviceClient.translate(TranslateRequest("blabla", "ru", None, None, None))).thenReturn(Future.successful("ablabl"))
@@ -66,7 +66,7 @@ class DslSpec extends WordSpecLike with Matchers with MockitoSugar with ScalaFut
 
   "GetTranslationsAction" when {
 
-    "constructing GetTranslationsRequest with valid params" should {
+    "constructing GetTranslationsActionParams with valid arguments" should {
       "do it properly" in {
         (Translator give me translations(2) of "blabla" from "fr" to "ru").state should be(actions.GetTranslationsAction.GetTranslationsActionParams("blabla", 2, Some("fr"), Some("ru"), None))
         (Translator give me translations(10) of "blabla2" from "en" to "fr" withCategory "general").state should be(actions.GetTranslationsAction.GetTranslationsActionParams("blabla2", 10, Some("en"), Some("fr"), Some("general")))
@@ -74,7 +74,7 @@ class DslSpec extends WordSpecLike with Matchers with MockitoSugar with ScalaFut
       }
     }
 
-    "constructing GetTranslationsRequest with illegal arguments" should {
+    "constructing GetTranslationsActionParams with illegal arguments" should {
       "throw IllegalArgumentException" in {
         the[IllegalArgumentException] thrownBy (Translator give me translations(2) of "") should have message s"requirement failed: Text to be translated must not be empty"
         the[IllegalArgumentException] thrownBy (Translator give me translations(3) of Random.nextString(10001)) should have message s"requirement failed: The size of text to be translated must not exceed ${actions.textSizeLimit} characters"
@@ -85,7 +85,7 @@ class DslSpec extends WordSpecLike with Matchers with MockitoSugar with ScalaFut
       }
     }
 
-    "constructing GetTranslationsRequest with valid params as future" should {
+    "constructing GetTranslationsActionParams with valid arguments as future" should {
       "1)call remote service client and get translations" in {
         //arrange
         val gonnaRespond = GetTranslationsResponse(Seq(TranslationMatch("albalb", 40, 3, 1001)))
@@ -115,7 +115,7 @@ class DslSpec extends WordSpecLike with Matchers with MockitoSugar with ScalaFut
 
     "SpeakAction" when {
 
-      "constructing SpeakRequest with valid params" should {
+      "constructing SpeakActionParams with valid arguments" should {
         "do it properly" in {
           (Translator speak "blabla" in "en").state should be(actions.SpeakAction.SpeakActionParams("blabla", Some("en"), None))
           (Translator speak "super" in "ru" withAudioContentType `audio/wav`).state should be(actions.SpeakAction.SpeakActionParams("super", Some("ru"), Some(`audio/wav`)))
@@ -125,11 +125,39 @@ class DslSpec extends WordSpecLike with Matchers with MockitoSugar with ScalaFut
         }
       }
 
-      "constructing SpeakRequest with illegal arguments" should {
+      "constructing SpeakActionParams with illegal arguments" should {
         "throw IllegalArgumentException" in {
           the[IllegalArgumentException] thrownBy (Translator speak "" in "en") should have message s"requirement failed: Text to be spoken must not be empty"
           the[IllegalArgumentException] thrownBy (Translator speak Random.nextString(2001) in "en") should have message s"requirement failed: The size of text to be spoken must not exceed ${actions.SpeakAction.speakTextSizeLimit} characters"
           the[IllegalArgumentException] thrownBy (Translator speak "blabla" in "") should have message "requirement failed: Language to speak IN must not be empty"
+        }
+      }
+
+      "constructing SpeakActionParams with valid arguments as future" should {
+        "1)call remote service client and get audio" in {
+          //arrange
+          val gonnaRespond = SpeakResponse(Array[Byte](1))
+          when(serviceClient.speak(SpeakRequest("blabla", "ru", None, None))).thenReturn(Future.successful(gonnaRespond))
+
+          //act
+          whenReady(Translator speak "blabla" in "ru" as future) { res =>
+
+            //assert
+            res should be(gonnaRespond)
+          }
+        }
+
+        "2)call remote service client and get audio" in {
+          //arrange
+          val gonnaRespond = SpeakResponse(Array[Byte](1))
+          when(serviceClient.speak(SpeakRequest("blabla", "ru", Some(`audio/wav`.toString), Some(MinSize.toString) ))).thenReturn(Future.successful(gonnaRespond))
+
+          //act
+          whenReady(Translator speak "blabla" in "ru" withAudioContentType `audio/wav` withQuality MinSize as future) { res =>
+
+            //assert
+            res should be(gonnaRespond)
+          }
         }
       }
     }

@@ -1,6 +1,7 @@
 package com.smartelk.translator.actions
 
 import com.smartelk.translator.Dsl._
+import com.smartelk.translator.remote.RemoteServiceClient.{SpeakResponse, SpeakRequest}
 import scala.concurrent.Future
 
 private[translator] object SpeakAction {
@@ -31,7 +32,9 @@ private[translator] object SpeakAction {
        new SpeakActionStateIn(state.copy(quality = Some(quality)))
      }
 
-     def as(scalaFutureWord: future.type)(implicit client: TranslatorClient): Future[String] = ???
+     def as(scalaFutureWord: future.type)(implicit client: TranslatorClient): Future[SpeakResponse] = {
+       client.remoteServiceClient.speak(SpeakRequest(state.text, state.lang.get, state.audioContentType.map(_.toString), state.quality.map(_.toString)))
+     }
    }
  }
 
