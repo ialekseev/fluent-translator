@@ -52,7 +52,7 @@ class DslSpec extends WordSpecLike with Matchers with MockitoSugar with ScalaFut
 
       "2)call remote service client and get a translation" in {
         //arrange
-        when(serviceClient.translate(TranslateRequest("blabla", "ru", Some("en"), Some("text/html"), Some("default")))).thenReturn(Future.successful("ablabl"))
+        when(serviceClient.translate(TranslateRequest("blabla", "ru", Some("en"), Some(`text/html`), Some("default")))).thenReturn(Future.successful("ablabl"))
 
         //act
         whenReady(Translator give me a translation of "blabla" from "en" to "ru" withContentType `text/html` withCategory "default" as future){res =>
@@ -150,7 +150,7 @@ class DslSpec extends WordSpecLike with Matchers with MockitoSugar with ScalaFut
         "2)call remote service client and get audio" in {
           //arrange
           val gonnaRespond = SpeakResponse(Array[Byte](1))
-          when(serviceClient.speak(SpeakRequest("blabla", "ru", Some(`audio/wav`.toString), Some(MinSize.toString) ))).thenReturn(Future.successful(gonnaRespond))
+          when(serviceClient.speak(SpeakRequest("blabla", "ru", Some(`audio/wav`), Some(MinSize) ))).thenReturn(Future.successful(gonnaRespond))
 
           //act
           whenReady(Translator speak "blabla" in "ru" withAudioContentType `audio/wav` withQuality MinSize as future) { res =>

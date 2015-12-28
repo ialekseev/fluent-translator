@@ -43,7 +43,7 @@ private[translator] object TranslateAction {
     }
 
     def as(scalaFutureWord: future.type)(implicit client: TranslatorClient): Future[String] = {
-      client.remoteServiceClient.translate(TranslateRequest(state.text, state.toLang.get, state.fromLang, state.contentType.map(_.toString), state.category))
+      client.remoteServiceClient.translate(TranslateRequest(state.text, state.toLang.get, state.fromLang, state.contentType, state.category))
     }
   }
 }

@@ -15,7 +15,7 @@ private[translator] object TokenProviderActor {
       val nowMillis = getCurrentTimeMillis
       if (nowMillis > token.expiresMillis) {
         for {
-          response <- httpClient.post(HttpClientBasicRequest(requestAccessTokenUri), Seq(
+          response <- httpClient.post[String](HttpClientBasicRequest(requestAccessTokenUri), Seq(
               "grant_type" -> "client_credentials",
               "client_id" -> clientId,
               "client_secret" -> clientSecret,

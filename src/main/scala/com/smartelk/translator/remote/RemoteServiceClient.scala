@@ -1,6 +1,7 @@
 package com.smartelk.translator.remote
 
 import akka.util.Timeout
+import com.smartelk.translator.Dsl.{TextContentType, AudioQuality, AudioContentType}
 import com.smartelk.translator.remote.HttpClient._
 import com.smartelk.translator.remote.TokenProviderActor.{Token, TokenRequestMessage}
 import scala.concurrent.Future
@@ -25,11 +26,10 @@ private[translator] object RemoteServiceClient {
     def translate(r: TranslateRequest): Future[String] = {
       require(!r.text.isEmpty)
       require(!r.toLang.isEmpty)
-      require(r.contentType.isEmpty || !r.contentType.get.isEmpty)
       require(r.category.isEmpty || !r.category.get.isEmpty)
 
-     call(httpClient.get)(HttpClientBasicRequest(translateUri,
-       Seq("text" -> r.text, "to" -> r.toLang) ++: fromOption(r.fromLang, "from") ++: fromOption(r.contentType, "contentType") ++: fromOption(r.category, "category")
+     call(httpClient.get[String])(HttpClientBasicRequest(translateUri,
+       Seq("text" -> r.text, "to" -> r.toLang) ++: fromOption(r.fromLang, "from") ++: fromOption(r.contentType.map(_.toString), "contentType") ++: fromOption(r.category, "category")
       )).map(XML.loadString(_).text)
      }
 
@@ -51,7 +51,7 @@ private[translator] object RemoteServiceClient {
       </TranslateOptions>).buildString(true)
 
       for {
-        response <- call(httpClient.post(_, body))(HttpClientBasicRequest(getTranslationsUri,
+        response <- call(httpClient.post[String](_, body))(HttpClientBasicRequest(getTranslationsUri,
           Seq("text" -> r.text, "from" -> r.fromLang, "to" -> r.toLang, "maxTranslations" -> r.maxTranslations.toString), Seq("content-type" -> "text/xml")))
         translationsXml = XML.loadString(response) \ "Translations"
         translationMatchesXml <- {
@@ -66,13 +66,13 @@ private[translator] object RemoteServiceClient {
     def speak(r: SpeakRequest): Future[SpeakResponse] = {
       require(!r.text.isEmpty)
       require(!r.lang.isEmpty)
-      require(r.audioContentType.isEmpty || !r.audioContentType.get.isEmpty)
-      require(r.quality.isEmpty || !r.quality.get.isEmpty)
 
-      ???
+      call(httpClient.get[Array[Byte]])(
+        HttpClientBasicRequest(speakUri, Seq("text" -> r.text, "language" -> r.lang) ++: fromOption(r.audioContentType.map(_.toString), "format") ++: fromOption(r.quality.map(_.toString), "options"))
+      ).map(SpeakResponse(_))
     }
 
-    private def call(func: HttpClientBasicRequest => Try[Response])(r: HttpClientBasicRequest): Future[String] = {
+    private def call[T](func: HttpClientBasicRequest => Try[Response[T]])(r: HttpClientBasicRequest): Future[T] = {
       (tokenProviderActor ? TokenRequestMessage).flatMap {
         case Token(accessToken, _) => {
           tryToFuture(func(r.copy(headers = Seq("Authorization" -> ("Bearer " + accessToken)) ++: r.headers))).flatMap {
@@ -87,14 +87,14 @@ private[translator] object RemoteServiceClient {
     private def fromOption(op: Option[String], name: String): KeyValueSeq = op.map(f => Seq(name -> f)).getOrElse(Seq())
   }
 
-  case class TranslateRequest(text: String, toLang: String, fromLang: Option[String], contentType: Option[String], category: Option[String])
+  case class TranslateRequest(text: String, toLang: String, fromLang: Option[String], contentType: Option[TextContentType], category: Option[String])
 
   /*todo: Check if we can omit passing 'from' language to this API method(like in Translate method). Here(https://msdn.microsoft.com/en-us/library/ff512417.aspx) 'from' goes as a required parameter, but in GetTranslationsResponse it's being mentioned(indirectly) as an optional one*/
   case class GetTranslationsRequest(text: String, maxTranslations: Int, fromLang: String, toLang: String, category: Option[String])
   case class GetTranslationsResponse(translations: Seq[TranslationMatch])
   case class TranslationMatch(translation: String, matchDegree: Int, rating: Int, count: Int)
 
-  case class SpeakRequest(text: String, lang: String, audioContentType: Option[String], quality: Option[String])
+  case class SpeakRequest(text: String, lang: String, audioContentType: Option[AudioContentType], quality: Option[AudioQuality])
   case class SpeakResponse(data: Array[Byte])
 }
 

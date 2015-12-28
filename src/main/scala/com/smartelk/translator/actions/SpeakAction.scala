@@ -33,7 +33,7 @@ private[translator] object SpeakAction {
      }
 
      def as(scalaFutureWord: future.type)(implicit client: TranslatorClient): Future[SpeakResponse] = {
-       client.remoteServiceClient.speak(SpeakRequest(state.text, state.lang.get, state.audioContentType.map(_.toString), state.quality.map(_.toString)))
+       client.remoteServiceClient.speak(SpeakRequest(state.text, state.lang.get, state.audioContentType, state.quality))
      }
    }
  }
