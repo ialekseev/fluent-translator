@@ -1,9 +1,0 @@
-<component name="libraryTable">
-  <library name="SBT: com.github.kristofa:mock-http-server:4.1:jar">
-    <CLASSES>
-      <root url="jar://$USER_HOME$/.ivy2/cache/com.github.kristofa/mock-http-server/jars/mock-http-server-4.1.jar!/" />
-    </CLASSES>
-    <JAVADOC />
-    <SOURCES />
-  </library>
-</component>

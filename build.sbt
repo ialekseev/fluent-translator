@@ -15,7 +15,7 @@ libraryDependencies ++= Seq(
   "org.mockito" % "mockito-core" % "1.10.19" % "test"
 )
 
-bintrayOrganization in bintray := Some("smartelk")
-bintrayVcsUrl := Some("git@github.com:SmartElk/microsoft-translator-scala-api.git")
+bintrayOrganization := Some("smartelk")
+bintrayVcsUrl := Some("https://github.com/SmartElk/microsoft-translator-scala-api.git")
 bintrayPackageLabels := Seq("scala", "microsoft", "translator", "api")
 licenses += ("MIT", url("http://opensource.org/licenses/MIT"))
