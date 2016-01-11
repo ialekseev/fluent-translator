@@ -4,7 +4,7 @@ version := "0.1.1"
 scalaVersion := "2.11.7"
 scalacOptions := Seq("-deprecation", "-feature")
 resolvers ++= Seq(
-  "Maven central" at "http://repo1.maven.org/maven2"
+  "Maven central http" at "http://repo1.maven.org/maven2"
 )
 libraryDependencies ++= Seq(
   "com.typesafe.akka"   %%  "akka-actor"  % "2.3.9",
