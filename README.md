@@ -1,6 +1,6 @@
 # fluent-translator
 
-Scala library for working with Microsoft, Google(?)... translators in a non-blocking way via a fancy DSL.
+Scala library for working with Microsoft, Google(?)... translators via a fancy DSL.
 
 Examples
 --------------
