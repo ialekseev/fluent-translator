@@ -1,4 +1,4 @@
-package com.smartelk.translator.remote
+package com.smartelk.fluent.translator.basic
 
 import scala.util.Try
 import scalaj.http.{HttpRequest, Http}

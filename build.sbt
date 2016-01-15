@@ -1,4 +1,4 @@
-name := "microsoft-translator-scala-api"
+name := "fluent-translator"
 organization := "com.smartelk"
 version := "0.1.1"
 scalaVersion := "2.11.7"
@@ -16,6 +16,6 @@ libraryDependencies ++= Seq(
 )
 
 bintrayOrganization := Some("smartelk")
-bintrayVcsUrl := Some("https://github.com/SmartElk/microsoft-translator-scala-api.git")
-bintrayPackageLabels := Seq("scala", "microsoft", "translator", "api")
+bintrayVcsUrl := Some("https://github.com/SmartElk/fluent-translator.git")
+bintrayPackageLabels := Seq("scala", "translator")
 licenses += ("MIT", url("http://opensource.org/licenses/MIT"))

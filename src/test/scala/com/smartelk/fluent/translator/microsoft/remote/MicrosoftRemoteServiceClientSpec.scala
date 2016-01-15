@@ -1,21 +1,19 @@
-package com.smartelk.translator
+package com.smartelk.fluent.translator.microsoft.remote
 
-import akka.actor.{Props, ActorSystem, Status, Actor}
-import akka.testkit.{TestKit}
-import com.smartelk.translator.Dsl.{MaxQuality, `text/plain`, `audio/wav`}
-import com.smartelk.translator.remote.HttpClient.HttpClient
-import com.smartelk.translator.remote._
-import com.smartelk.translator.remote.HttpClient._
-import com.smartelk.translator.remote.RemoteServiceClient._
-import com.smartelk.translator.remote.TokenProviderActor.{Token, TokenRequestMessage}
+import akka.actor.{Actor, ActorSystem, Props, Status}
+import akka.testkit.TestKit
+import com.smartelk.fluent.translator.Dsl.{MaxQuality, `audio/wav`, `text/plain`}
+import com.smartelk.fluent.translator.basic.HttpClient.{HttpClient, _}
+import com.smartelk.fluent.translator.microsoft.remote.MicrosoftRemoteServiceClient._
+import com.smartelk.fluent.translator.microsoft.remote.MicrosoftTokenProviderActor.{Token, TokenRequestMessage}
 import org.mockito.Mockito._
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.mock.MockitoSugar
 import org.scalatest.time.{Millis, Span}
 import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach, Matchers, WordSpecLike}
-import scala.util.{Try, Failure, Success}
+import scala.util.{Failure, Success}
 
-class RemoteServiceClientSpec(system: ActorSystem) extends TestKit(system) with WordSpecLike with Matchers with MockitoSugar with BeforeAndAfterEach with BeforeAndAfterAll with ScalaFutures {
+class MicrosoftRemoteServiceClientSpec(system: ActorSystem) extends TestKit(system) with WordSpecLike with Matchers with MockitoSugar with BeforeAndAfterEach with BeforeAndAfterAll with ScalaFutures {
   def this() = this(ActorSystem("test"))
 
   val httpClient = mock[HttpClient]

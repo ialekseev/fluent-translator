@@ -1,18 +1,19 @@
-package com.smartelk.translator.remote
+package com.smartelk.fluent.translator.microsoft.remote
 
-import akka.util.Timeout
-import com.smartelk.translator.Dsl.{TextContentType, AudioQuality, AudioContentType}
-import com.smartelk.translator.remote.HttpClient._
-import com.smartelk.translator.remote.TokenProviderActor.{Token, TokenRequestMessage}
-import scala.concurrent.Future
 import akka.actor._
 import akka.pattern.ask
-import scala.concurrent.duration._
+import akka.util.Timeout
+import com.smartelk.fluent.translator.Dsl.{AudioContentType, AudioQuality, TextContentType}
+import com.smartelk.fluent.translator.microsoft.remote.MicrosoftTokenProviderActor.{TokenRequestMessage, Token}
+import com.smartelk.fluent.translator.basic.HttpClient.{HttpClient, _}
+import com.smartelk.fluent.translator.basic._
 import scala.concurrent.ExecutionContext.Implicits._
+import scala.concurrent.Future
+import scala.concurrent.duration._
 import scala.util.Try
 import scala.xml.XML
 
-private[translator] object RemoteServiceClient {
+private[translator] object MicrosoftRemoteServiceClient {
 
   trait RemoteServiceClient {
     def translate(r: TranslateRequest): Future[String]

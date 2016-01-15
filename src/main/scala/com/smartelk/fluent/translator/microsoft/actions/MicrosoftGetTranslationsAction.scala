@@ -1,10 +1,13 @@
-package com.smartelk.translator.actions
+package com.smartelk.fluent.translator.microsoft.actions
 
-import com.smartelk.translator.Dsl.{TranslatorClient, future}
-import com.smartelk.translator.remote.RemoteServiceClient.{GetTranslationsResponse, GetTranslationsRequest}
+import com.smartelk.fluent.translator.Dsl.Microsoft.TranslatorClient
+import com.smartelk.fluent.translator.Dsl.future
+import com.smartelk.fluent.translator.basic.ActionState
+import com.smartelk.fluent.translator.microsoft.remote.MicrosoftRemoteServiceClient
+import MicrosoftRemoteServiceClient.{GetTranslationsResponse, GetTranslationsRequest}
 import scala.concurrent.Future
 
-private[translator] object GetTranslationsAction {
+private[translator] object MicrosoftGetTranslationsAction {
 
   case class GetTranslationsActionParams(text: String,
                               maxTranslations: Int,

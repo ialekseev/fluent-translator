@@ -1,10 +1,13 @@
-package com.smartelk.translator.actions
+package com.smartelk.fluent.translator.microsoft.actions
 
-import com.smartelk.translator.Dsl._
-import com.smartelk.translator.remote.RemoteServiceClient.{SpeakResponse, SpeakRequest}
+import com.smartelk.fluent.translator.Dsl.Microsoft.TranslatorClient
+import com.smartelk.fluent.translator.Dsl._
+import com.smartelk.fluent.translator.basic.ActionState
+import com.smartelk.fluent.translator.microsoft.remote.MicrosoftRemoteServiceClient
+import MicrosoftRemoteServiceClient.{SpeakResponse, SpeakRequest}
 import scala.concurrent.Future
 
-private[translator] object SpeakAction {
+private[translator] object MicrosoftSpeakAction {
 
   case class SpeakActionParams(text: String,
                            lang: Option[String] = None,

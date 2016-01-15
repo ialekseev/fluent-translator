@@ -1,11 +1,12 @@
-package com.smartelk.translator.remote
+package com.smartelk.fluent.translator.microsoft.remote
 
-import akka.actor.{Status, Actor}
-import com.smartelk.translator.remote.HttpClient._
+import akka.actor.{Actor, Status}
+import com.smartelk.fluent.translator.basic.HttpClient.{HttpClient, _}
+import com.smartelk.fluent.translator.basic._
 import org.json4s.native.JsonMethods._
 import scala.util.{Failure, Success, Try}
 
-private[translator] object TokenProviderActor {
+private[translator] object MicrosoftTokenProviderActor {
 
   class TokenProviderActor(clientId: String, clientSecret: String, httpClient: HttpClient) extends Actor {
     private var token = Token("", 0L)

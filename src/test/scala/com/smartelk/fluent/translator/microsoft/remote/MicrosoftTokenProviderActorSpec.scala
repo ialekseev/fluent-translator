@@ -1,19 +1,18 @@
-package com.smartelk.translator
+package com.smartelk.fluent.translator.microsoft.remote
 
-import akka.actor.{Status, ActorSystem, Props}
+import akka.actor.{ActorSystem, Props, Status}
 import akka.testkit.{ImplicitSender, TestKit}
-import com.smartelk.translator.remote.HttpClient.HttpClient
-import com.smartelk.translator.remote._
-import com.smartelk.translator.remote.HttpClient._
-import com.smartelk.translator.remote.TokenProviderActor.{Token, TokenRequestMessage, TokenProviderActor}
+import com.smartelk.fluent.translator.basic.HttpClient.{HttpClient, _}
+import com.smartelk.fluent.translator.microsoft.remote.MicrosoftTokenProviderActor.{Token, TokenProviderActor, TokenRequestMessage}
 import org.json4s.ParserUtil.ParseException
+import org.mockito.Matchers._
+import org.mockito.Mockito._
 import org.scalatest.mock.MockitoSugar
 import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach, Matchers, WordSpecLike}
-import org.mockito.Mockito._
-import org.mockito.Matchers._
+
 import scala.util.{Failure, Success}
 
-class TokenProviderActorSpec(system: ActorSystem) extends TestKit(system) with ImplicitSender with WordSpecLike with Matchers with MockitoSugar with BeforeAndAfterEach with BeforeAndAfterAll {
+class MicrosoftTokenProviderActorSpec(system: ActorSystem) extends TestKit(system) with ImplicitSender with WordSpecLike with Matchers with MockitoSugar with BeforeAndAfterEach with BeforeAndAfterAll {
   def this() = this(ActorSystem("test"))
 
   val httpClient = mock[HttpClient]
