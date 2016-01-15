@@ -9,7 +9,6 @@ import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.mock.MockitoSugar
 import org.scalatest.time.{Millis, Span}
 import org.scalatest.{Matchers, WordSpecLike}
-import scala.concurrent.Future
 import scala.util.Try
 
 trait Playground extends WordSpecLike with Matchers with MockitoSugar with ScalaFutures {
@@ -220,7 +219,7 @@ object Readme {
     Microsoft give me a translation of "Comment vas-tu?" from "fr" to "en" as future //Future[String]
     Microsoft give me a translation of "What a lovely weather today!" from "en" to "fr" withContentType `text/html` as future //Future[String]
     Microsoft give me many translations of "Doing well by doing good" from "en" to "ru" as future //Future[GetTranslationsResponse]
-    Microsoft give me many translations of "Paris holidays" from "en" to "ru" withCategory "general" as future //Future[GetTranslationsResponse]
+    Microsoft give me translations(3) of "Paris holidays" from "en" to "ru" withCategory "general" as future //Future[GetTranslationsResponse]
     Microsoft speak "I'm doing well enough now" in "en" withAudioContentType `audio/mp3` as future //Future[SpeakResponse]
     Microsoft speak "How are you doing?" in "en" withQuality MinSize as future //Future[SpeakResponse]
   }
