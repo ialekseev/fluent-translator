@@ -5,7 +5,7 @@ Scala library for working with Microsoft, Google(?)... translators in a non-bloc
 Examples
 --------------
 Using Microsoft translator client:
-<pre>
+```scala
   import com.smartelk.fluent.translator.Dsl._
 
   implicit val client = new MicrosoftTranslatorClient {
@@ -19,6 +19,6 @@ Using Microsoft translator client:
   val res3: Future[GetTranslationsResponse] = Microsoft give me many translations of "Paris holidays" from "en" to "ru" withCategory "general" as future
   val res4: Future[SpeakResponse] = Microsoft speak "I'm doing well enough now" in "en" withAudioContentType `audio/mp3` as future
   val res5: Future[SpeakResponse] = Microsoft speak "How are you doing?" in "en" withQuality MinSize as future
-</pre>
+```
 
 Work in progress... gonna be done soon.
