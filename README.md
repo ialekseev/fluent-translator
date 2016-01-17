@@ -21,4 +21,10 @@ Using Microsoft translator client:
   Microsoft speak "How are you doing?" in "en" withQuality MinSize as future //Future[SpeakResponse]
 ```
 
-Work in progress... gonna be done soon.
+Installation
+--------------
+Build.sbt:
+```scala
+   resolvers += Resolver.bintrayRepo("smartelk", "maven") 
+   libraryDependencies += "com.smartelk" %% "fluent-translator" % "0.1.1"
+```
