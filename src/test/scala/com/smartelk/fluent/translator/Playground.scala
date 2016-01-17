@@ -11,6 +11,16 @@ import org.scalatest.time.{Millis, Span}
 import org.scalatest.{Matchers, WordSpecLike}
 import scala.util.Try
 
+//!Important!
+/* Playground - is a bunch of integration tests working with live Translator service. To make them work you need to create src/test/resources/playground.conf config with the following HOCON structure:
+    playground {
+      microsoft {
+        clientId = "your client id"
+        clientSecret = "your client secret"
+      }
+}
+*/
+
 trait Playground extends WordSpecLike with Matchers with MockitoSugar with ScalaFutures {
   val config = ConfigFactory.load("playground").withFallback(ConfigFactory.load())
   val playgroundProxy = Try(config.getConfig("playground.proxy")).toOption.map(c => new java.net.Proxy(Type.HTTP, new InetSocketAddress(c.getString("host"), c.getInt("port"))))
