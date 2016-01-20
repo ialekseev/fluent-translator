@@ -30,7 +30,7 @@ object Dsl {
   case object MaxQuality extends AudioQuality
   case object MinSize extends AudioQuality
 
-  type TranslatorHttpClient = HttpClientImpl
+  type TranslatorHttpClient = HttpClient
   type MicrosoftTranslatorClient = Microsoft.TranslatorClient
 
   object Microsoft {
@@ -59,11 +59,10 @@ object Dsl {
       val clientId: String
       val clientSecret: String
 
-      val connTimeoutMillis = 1000
-      val readTimeoutMillis = 5000
-      val proxy: Option[java.net.Proxy] = None
-      lazy val tokenRequestTimeoutMillis = readTimeoutMillis + 1000
-      lazy val httpClient: HttpClient = new HttpClientImpl(connTimeoutMillis, readTimeoutMillis, proxy)
+      val connectTimeoutMillis = 1000
+      val requestTimeoutMillis = 5000
+      lazy val tokenRequestTimeoutMillis = requestTimeoutMillis + 1000
+      lazy val httpClient: HttpClient = new HttpClient(_.setConnectTimeout(connectTimeoutMillis).setRequestTimeout(requestTimeoutMillis))
       lazy val tokenProviderActor = translatorActorSystem.actorOf(Props(new TokenProviderActor(clientId, clientSecret, httpClient)))
       lazy val remoteServiceClient: RemoteServiceClient = new RemoteServiceClientImpl(clientId, clientSecret, tokenProviderActor, tokenRequestTimeoutMillis, httpClient)
     }

@@ -8,7 +8,7 @@ resolvers ++= Seq(
 )
 libraryDependencies ++= Seq(
   "com.typesafe.akka"   %%  "akka-actor"  % "2.3.9",
-  "org.scalaj" %% "scalaj-http" % "2.2.0",
+  "net.databinder.dispatch" %% "dispatch-core" % "0.11.3",
   "org.json4s" %% "json4s-native" % "3.3.0",
   "com.typesafe.akka"   %%  "akka-testkit"  % "2.3.9" % "test",
   "org.scalatest" %%  "scalatest"   % "2.2.1" % "test",

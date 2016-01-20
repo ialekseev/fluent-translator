@@ -6,11 +6,9 @@ import akka.util.Timeout
 import com.smartelk.fluent.translator.Dsl.{AudioContentType, AudioQuality, TextContentType}
 import com.smartelk.fluent.translator.microsoft.remote.MicrosoftTokenProviderActor.{TokenRequestMessage, Token}
 import com.smartelk.fluent.translator.basic.HttpClient.{HttpClient, _}
-import com.smartelk.fluent.translator.basic._
 import scala.concurrent.ExecutionContext.Implicits._
 import scala.concurrent.Future
 import scala.concurrent.duration._
-import scala.util.Try
 import scala.xml.XML
 
 private[translator] object MicrosoftRemoteServiceClient {
@@ -73,14 +71,9 @@ private[translator] object MicrosoftRemoteServiceClient {
       ).map(SpeakResponse(_))
     }
 
-    private def call[T](func: HttpClientBasicRequest => Try[Response[T]])(r: HttpClientBasicRequest): Future[T] = {
+    private def call[T](func: HttpClientBasicRequest => Future[T])(r: HttpClientBasicRequest): Future[T] = {
       (tokenProviderActor ? TokenRequestMessage).flatMap {
-        case Token(accessToken, _) => {
-          tryToFuture(func(r.copy(headers = Seq("Authorization" -> ("Bearer " + accessToken)) ++: r.headers))).flatMap {
-            case SuccessHttpResponse(result) => Future.successful(result)
-            case ErrorHttpResponse(problem) => Future.failed(new RuntimeException(s"Remote service returned a problem: $problem"))
-          }
-        }
+        case Token(accessToken, _) => func(r.copy(headers = Seq("Authorization" -> ("Bearer " + accessToken)) ++: r.headers))
         case Status.Failure(e) => Future.failed(e)
       }
     }

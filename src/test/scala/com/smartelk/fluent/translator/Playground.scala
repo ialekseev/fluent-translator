@@ -1,8 +1,6 @@
 package com.smartelk.fluent.translator
 
 import java.io.ByteArrayInputStream
-import java.net.InetSocketAddress
-import java.net.Proxy.Type
 import com.smartelk.fluent.translator.Dsl._
 import com.typesafe.config.ConfigFactory
 import org.scalatest.concurrent.ScalaFutures
@@ -22,8 +20,10 @@ import scala.util.Try
 */
 
 trait Playground extends WordSpecLike with Matchers with MockitoSugar with ScalaFutures {
+  case class HttpProxy(host: String, port: Int, user: Option[String] = None, password: Option[String] = None)
+
   val config = ConfigFactory.load("playground").withFallback(ConfigFactory.load())
-  val playgroundProxy = Try(config.getConfig("playground.proxy")).toOption.map(c => new java.net.Proxy(Type.HTTP, new InetSocketAddress(c.getString("host"), c.getInt("port"))))
+  val playgroundProxy = Try(config.getConfig("playground.proxy")).toOption.map(c => new HttpProxy(c.getString("host"), c.getInt("port"), Try(c.getString("user")).toOption, Try(c.getString("password")).toOption))
   implicit override val patienceConfig  = PatienceConfig(timeout = Span(6000, Millis))
 }
 
@@ -34,7 +34,6 @@ class MicrosoftPlayground extends Playground {
     implicit object client extends MicrosoftTranslatorClient {
       val clientId = playgroundClientId
       val clientSecret = playgroundClientSecret
-      override val proxy = playgroundProxy
     }
 
   "Translating" when {
@@ -44,7 +43,6 @@ class MicrosoftPlayground extends Playground {
         implicit val client = new MicrosoftTranslatorClient {
           val clientId = "bad"
           val clientSecret = playgroundClientSecret
-          override val proxy = playgroundProxy
         }
 
         (the[RuntimeException] thrownBy (Microsoft give me a translation of "How are you?" from "en" to "fr" as future).futureValue).getMessage.contains("invalid_client") should be(true)
@@ -56,7 +54,6 @@ class MicrosoftPlayground extends Playground {
         implicit val client = new MicrosoftTranslatorClient {
           val clientId = playgroundClientId
           val clientSecret = "bad"
-          override val proxy = playgroundProxy
         }
 
         (the[RuntimeException] thrownBy (Microsoft give me a translation of "How are you?" from "en" to "fr" as future).futureValue).getMessage.contains("invalid_client") should be(true)
@@ -100,7 +97,6 @@ class MicrosoftPlayground extends Playground {
         implicit val client = new MicrosoftTranslatorClient {
           val clientId = "bad"
           val clientSecret = playgroundClientSecret
-          override val proxy = playgroundProxy
         }
 
         (the[RuntimeException] thrownBy (Microsoft give me many translations of "How are you?" from "en" to "fr" as future).futureValue).getMessage.contains("invalid_client") should be(true)
@@ -112,7 +108,6 @@ class MicrosoftPlayground extends Playground {
         implicit val client = new MicrosoftTranslatorClient {
           val clientId = playgroundClientId
           val clientSecret = "bad"
-          override val proxy = playgroundProxy
         }
 
         (the[RuntimeException] thrownBy (Microsoft give me translations (10) of "How are you?" from "en" to "fr" as future).futureValue).getMessage.contains("invalid_client") should be(true)
@@ -147,7 +142,6 @@ class MicrosoftPlayground extends Playground {
         implicit val client = new MicrosoftTranslatorClient {
           val clientId = "bad"
           val clientSecret = playgroundClientSecret
-          override val proxy = playgroundProxy
         }
 
         (the[RuntimeException] thrownBy (Microsoft speak "How are you?" in "en" as future).futureValue).getMessage.contains("invalid_client") should be(true)
@@ -159,7 +153,6 @@ class MicrosoftPlayground extends Playground {
         implicit val client = new MicrosoftTranslatorClient {
           val clientId = playgroundClientId
           val clientSecret = "bad"
-          override val proxy = playgroundProxy
         }
 
         (the[RuntimeException] thrownBy (Microsoft speak "How are you?" in "en" as future).futureValue).getMessage.contains("invalid_client") should be(true)
