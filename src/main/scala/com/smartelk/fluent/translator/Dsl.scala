@@ -62,7 +62,7 @@ object Dsl {
       val connectTimeoutMillis = 1000
       val requestTimeoutMillis = 5000
       lazy val tokenRequestTimeoutMillis = requestTimeoutMillis + 1000
-      lazy val httpClient: HttpClient = new HttpClient(_.setConnectTimeout(connectTimeoutMillis).setRequestTimeout(requestTimeoutMillis))
+      lazy val httpClient = new HttpClient(_.setConnectTimeout(connectTimeoutMillis).setRequestTimeout(requestTimeoutMillis))
       lazy val tokenProviderActor = translatorActorSystem.actorOf(Props(new TokenProviderActor(clientId, clientSecret, httpClient)))
       lazy val remoteServiceClient: RemoteServiceClient = new RemoteServiceClientImpl(clientId, clientSecret, tokenProviderActor, tokenRequestTimeoutMillis, httpClient)
     }

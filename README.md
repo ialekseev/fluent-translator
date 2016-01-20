@@ -8,9 +8,9 @@ Using Microsoft translator client:
 ```scala
   import com.smartelk.fluent.translator.Dsl._
 
-  implicit val client = new MicrosoftTranslatorClient {
-    val clientId = "microsoft client id"
-    val clientSecret = "microsoft client secret"
+  implicit object client extends MicrosoftTranslatorClient {
+     val clientId = "microsoft client id"
+     val clientSecret = "microsoft client secret"
   }
 
   Microsoft give me a translation of "Comment vas-tu?" from "fr" to "en" as future //Future[String]

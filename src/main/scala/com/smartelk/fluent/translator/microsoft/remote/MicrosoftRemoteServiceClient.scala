@@ -27,9 +27,10 @@ private[translator] object MicrosoftRemoteServiceClient {
       require(!r.toLang.isEmpty)
       require(r.category.isEmpty || !r.category.get.isEmpty)
 
-     call(httpClient.get[String])(HttpClientBasicRequest(translateUri,
-       Seq("text" -> r.text, "to" -> r.toLang) ++: fromOption(r.fromLang, "from") ++: fromOption(r.contentType.map(_.toString), "contentType") ++: fromOption(r.category, "category")
-      )).map(XML.loadString(_).text)
+     for {
+       body <- call(httpClient.get[String]) (HttpClientBasicRequest(translateUri,
+          Seq("text" -> r.text, "to" -> r.toLang) ++: fromOption(r.fromLang, "from") ++: fromOption(r.contentType.map(_.toString), "contentType") ++: fromOption (r.category, "category")))
+      } yield XML.loadString(body).text
      }
 
     def getTranslations(r: GetTranslationsRequest): Future[GetTranslationsResponse] = {
@@ -50,12 +51,12 @@ private[translator] object MicrosoftRemoteServiceClient {
       </TranslateOptions>).buildString(true)
 
       for {
-        response <- call(httpClient.post[String](_, body))(HttpClientBasicRequest(getTranslationsUri,
-          Seq("text" -> r.text, "from" -> r.fromLang, "to" -> r.toLang, "maxTranslations" -> r.maxTranslations.toString), Seq("content-type" -> "text/xml")))
-        translationsXml = XML.loadString(response) \ "Translations"
+        body <- call(httpClient.post[String](_, body))(HttpClientBasicRequest(getTranslationsUri,
+          Seq("text" -> r.text, "from" -> r.fromLang, "to" -> r.toLang, "maxTranslations" -> r.maxTranslations.toString), Seq("Content-Type" -> "text/xml")))
+        translationsXml = XML.loadString(body) \ "Translations"
         translationMatchesXml <- {
           if (translationsXml.size > 0) Future.successful(translationsXml \ "TranslationMatch")
-          else Future.failed(new RuntimeException(s"Remote service returned bad XML: $response"))
+          else Future.failed(new RuntimeException(s"Remote service returned bad XML: $body"))
         }
         translations = translationMatchesXml.map(t =>
           TranslationMatch((t \ "TranslatedText").text, (t \ "MatchDegree").text.toInt, (t \ "Rating").text.toInt, (t \ "Count").text.toInt))
@@ -66,14 +67,15 @@ private[translator] object MicrosoftRemoteServiceClient {
       require(!r.text.isEmpty)
       require(!r.lang.isEmpty)
 
-      call(httpClient.get[Array[Byte]])(
-        HttpClientBasicRequest(speakUri, Seq("text" -> r.text, "language" -> r.lang) ++: fromOption(r.audioContentType.map(_.toString), "format") ++: fromOption(r.quality.map(_.toString), "options"))
-      ).map(SpeakResponse(_))
+      for {
+        body <- call(httpClient.get[Array[Byte]])(
+          HttpClientBasicRequest(speakUri, Seq("text" -> r.text, "language" -> r.lang) ++: fromOption(r.audioContentType.map(_.toString), "format") ++: fromOption(r.quality.map(_.toString), "options")))
+      } yield SpeakResponse(body)
     }
 
-    private def call[T](func: HttpClientBasicRequest => Future[T])(r: HttpClientBasicRequest): Future[T] = {
+    private def call[T](func: HttpClientBasicRequest => Future[(Int, T)])(r: HttpClientBasicRequest): Future[T] = {
       (tokenProviderActor ? TokenRequestMessage).flatMap {
-        case Token(accessToken, _) => func(r.copy(headers = Seq("Authorization" -> ("Bearer " + accessToken)) ++: r.headers))
+        case Token(accessToken, _) => func(r.copy(headers = Seq("Authorization" -> ("Bearer " + accessToken)) ++: r.headers)).flatMap(matchResponseBody(_))
         case Status.Failure(e) => Future.failed(e)
       }
     }

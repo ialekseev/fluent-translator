@@ -74,7 +74,7 @@ class MicrosoftRemoteServiceClientSpec(system: ActorSystem) extends TestKit(syst
 
         val client = new RemoteServiceClientImpl("my-client-id", "my-client-secret", actorRef, 2000, httpClient)
 
-        when(httpClient.get[String](HttpClientBasicRequest(translateUri, Seq("text" -> "blabla", "to" -> "fr"), Seq("Authorization" -> "Bearer 111aaa")))).thenReturn(Future.successful("<string>albalb</string>"))
+        when(httpClient.get[String](HttpClientBasicRequest(translateUri, Seq("text" -> "blabla", "to" -> "fr"), Seq("Authorization" -> "Bearer 111aaa")))).thenReturn(Future.successful(200, "<string>albalb</string>"))
 
         //act
         whenReady(client.translate(TranslateRequest("blabla", "fr", None, None, None))) { res =>
@@ -127,7 +127,7 @@ class MicrosoftRemoteServiceClientSpec(system: ActorSystem) extends TestKit(syst
             <User></User>
           </TranslateOptions>).buildString(true)
 
-        when(httpClient.post[String](HttpClientBasicRequest(getTranslationsUri, Seq("text" -> "bla", "from"-> "en", "to" -> "fr", "maxTranslations" -> "10"), Seq("Authorization"->"Bearer 111aaa", "content-type" -> "text/xml")), gonnaBeBody)).thenReturn(Future.failed(new RuntimeException("Can't connect")))
+        when(httpClient.post[String](HttpClientBasicRequest(getTranslationsUri, Seq("text" -> "bla", "from"-> "en", "to" -> "fr", "maxTranslations" -> "10"), Seq("Authorization"->"Bearer 111aaa", "Content-Type" -> "text/xml")), gonnaBeBody)).thenReturn(Future.failed(new RuntimeException("Can't connect")))
 
         //act
         whenReady(client.getTranslations(GetTranslationsRequest("bla", 10, "en", "fr", Some("super"))).failed) {res =>
@@ -161,7 +161,7 @@ class MicrosoftRemoteServiceClientSpec(system: ActorSystem) extends TestKit(syst
 
         val gonnaReturn = xml.Utility.trim(<bad>very bad</bad>).buildString(true)
 
-        when(httpClient.post[String](HttpClientBasicRequest(getTranslationsUri, Seq("text" -> "bla", "from"-> "en", "to" -> "fr", "maxTranslations" -> "10"), Seq("Authorization"->"Bearer 111aaa", "content-type" -> "text/xml")), gonnaBeBody)).thenReturn(Future.successful(gonnaReturn))
+        when(httpClient.post[String](HttpClientBasicRequest(getTranslationsUri, Seq("text" -> "bla", "from"-> "en", "to" -> "fr", "maxTranslations" -> "10"), Seq("Authorization"->"Bearer 111aaa", "Content-Type" -> "text/xml")), gonnaBeBody)).thenReturn(Future.successful(200, gonnaReturn))
 
         //act
         whenReady(client.getTranslations(GetTranslationsRequest("bla", 10, "en", "fr", None)).failed) { res =>
@@ -205,7 +205,7 @@ class MicrosoftRemoteServiceClientSpec(system: ActorSystem) extends TestKit(syst
           </Translations>
         </GetTranslationsResponse>).buildString(true)
 
-        when(httpClient.post[String](HttpClientBasicRequest(getTranslationsUri, Seq("text" -> "blabla", "from"-> "en", "to" -> "fr", "maxTranslations" -> "10"), Seq("Authorization" -> "Bearer 111aaa", "content-type" -> "text/xml")), gonnaBeBody)).thenReturn(Future.successful(gonnaReturn))
+        when(httpClient.post[String](HttpClientBasicRequest(getTranslationsUri, Seq("text" -> "blabla", "from"-> "en", "to" -> "fr", "maxTranslations" -> "10"), Seq("Authorization" -> "Bearer 111aaa", "Content-Type" -> "text/xml")), gonnaBeBody)).thenReturn(Future.successful(200, gonnaReturn))
 
         //act
         whenReady(client.getTranslations(GetTranslationsRequest("blabla", 10, "en", "fr", Some("cool")))) { res =>
@@ -270,7 +270,7 @@ class MicrosoftRemoteServiceClientSpec(system: ActorSystem) extends TestKit(syst
 
         val client = new RemoteServiceClientImpl("my-client-id", "my-client-secret", actorRef, 2000, httpClient)
 
-        when(httpClient.get[Array[Byte]](HttpClientBasicRequest(speakUri, Seq("text"-> "blabla", "language"-> "fr"), Seq("Authorization"->"Bearer 111aaa")))).thenReturn(Future.successful(Array[Byte](1, 2, 3)))
+        when(httpClient.get[Array[Byte]](HttpClientBasicRequest(speakUri, Seq("text"-> "blabla", "language"-> "fr"), Seq("Authorization"->"Bearer 111aaa")))).thenReturn(Future.successful(200, Array[Byte](1, 2, 3)))
 
         //act
         whenReady(client.speak(SpeakRequest("blabla", "fr", None, None))) { res =>

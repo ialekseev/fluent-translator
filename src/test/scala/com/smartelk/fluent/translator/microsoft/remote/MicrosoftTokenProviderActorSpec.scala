@@ -3,7 +3,7 @@ package com.smartelk.fluent.translator.microsoft.remote
 import akka.actor.{ActorSystem, Props, Status}
 import akka.testkit.{ImplicitSender, TestKit}
 import com.smartelk.fluent.translator.basic.HttpClient.{HttpClient, _}
-import com.smartelk.fluent.translator.microsoft.remote.MicrosoftTokenProviderActor.{Token, TokenProviderActor, TokenRequestMessage}
+import com.smartelk.fluent.translator.microsoft.remote.MicrosoftTokenProviderActor._
 import org.json4s.ParserUtil.ParseException
 import org.mockito.Matchers._
 import org.mockito.Mockito._
@@ -38,16 +38,16 @@ class MicrosoftTokenProviderActorSpec(system: ActorSystem) extends TestKit(syste
     }
 
     "remote service returns success but json is invalid" should {
-      "fail with ParseException" in {
+      "fail with CannotParseTokenException" in {
         //arrange
         val actor = system.actorOf(Props(new TokenProviderActor("my-client-id", "my-client-secret", httpClient)))
-        when(httpClient.post[String](HttpClientBasicRequest(requestAccessTokenUri), params)).thenReturn(Future.successful("Bad json"))
+        when(httpClient.post[String](HttpClientBasicRequest(requestAccessTokenUri), params)).thenReturn(Future.successful(200, "Bad json"))
 
         //act
         actor ! TokenRequestMessage
 
         //assert
-        expectMsgType[Status.Failure].cause shouldBe a [ParseException]
+        expectMsgType[Status.Failure].cause.getMessage should be (s"Server returned 200, but I can't parse a token. Response was: Bad json")
       }
     }
 
@@ -57,7 +57,7 @@ class MicrosoftTokenProviderActorSpec(system: ActorSystem) extends TestKit(syste
         val actor = system.actorOf(Props(new TokenProviderActor("my-client-id", "my-client-secret", httpClient){
           override def getCurrentTimeMillis = 2001
         }))
-        when(httpClient.post[String](HttpClientBasicRequest(requestAccessTokenUri), params)).thenReturn(Future.successful("""{"access_token": "123abc", "expires_in": "1001"}"""))
+        when(httpClient.post[String](HttpClientBasicRequest(requestAccessTokenUri), params)).thenReturn(Future.successful(200, """{"access_token": "123abc", "expires_in": "1001"}"""))
 
         //act
         actor ! TokenRequestMessage
@@ -76,12 +76,12 @@ class MicrosoftTokenProviderActorSpec(system: ActorSystem) extends TestKit(syste
         val actor = system.actorOf(Props(new TokenProviderActor("my-client-id", "my-client-secret", httpClient){
           override def getCurrentTimeMillis = currentTime
         }))
-        when(httpClient.post[String](HttpClientBasicRequest(requestAccessTokenUri), params)).thenReturn(Future.successful("""{"access_token": "123abc", "expires_in": "600"}"""))
+        when(httpClient.post[String](HttpClientBasicRequest(requestAccessTokenUri), params)).thenReturn(Future.successful(200, """{"access_token": "123abc", "expires_in": "600"}"""))
         actor ! TokenRequestMessage
         expectMsgType[Token] should be (Token("123abc", 2000 + 600 * 1000 - tokenExpirationDeltaInMillis))
 
         currentTime =  2000 + 600 * 1000 - tokenExpirationDeltaInMillis - 1
-        when(httpClient.post[String](HttpClientBasicRequest(requestAccessTokenUri), params)).thenReturn(Future.successful("""{"access_token": "123abc_new", "expires_in": "1000"}"""))
+        when(httpClient.post[String](HttpClientBasicRequest(requestAccessTokenUri), params)).thenReturn(Future.successful(200, """{"access_token": "123abc_new", "expires_in": "1000"}"""))
 
         //act
         actor ! TokenRequestMessage
@@ -99,12 +99,12 @@ class MicrosoftTokenProviderActorSpec(system: ActorSystem) extends TestKit(syste
         val actor = system.actorOf(Props(new TokenProviderActor("my-client-id", "my-client-secret", httpClient){
           override def getCurrentTimeMillis = currentTime
         }))
-        when(httpClient.post[String](HttpClientBasicRequest(requestAccessTokenUri), params)).thenReturn(Future.successful("""{"access_token": "123abc", "expires_in": "600"}"""))
+        when(httpClient.post[String](HttpClientBasicRequest(requestAccessTokenUri), params)).thenReturn(Future.successful(200, """{"access_token": "123abc", "expires_in": "600"}"""))
         actor ! TokenRequestMessage
         expectMsgType[Token] should be (Token("123abc", 2000 + 600 * 1000 - tokenExpirationDeltaInMillis))
 
         currentTime =  2000 + 600 * 1000 - tokenExpirationDeltaInMillis + 1
-        when(httpClient.post[String](HttpClientBasicRequest(requestAccessTokenUri), params)).thenReturn(Future.successful("""{"access_token": "123abc_new", "expires_in": "1500"}"""))
+        when(httpClient.post[String](HttpClientBasicRequest(requestAccessTokenUri), params)).thenReturn(Future.successful(200, """{"access_token": "123abc_new", "expires_in": "1500"}"""))
 
         //act
         actor ! TokenRequestMessage

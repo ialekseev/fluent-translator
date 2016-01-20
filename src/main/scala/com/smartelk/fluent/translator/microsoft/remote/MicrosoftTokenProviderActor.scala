@@ -3,6 +3,8 @@ package com.smartelk.fluent.translator.microsoft.remote
 import akka.actor.{Actor, Status}
 import com.smartelk.fluent.translator.basic.HttpClient.{HttpClient, _}
 import com.smartelk.fluent.translator.basic._
+import org.json4s.MappingException
+import org.json4s.ParserUtil.ParseException
 import org.json4s.native.JsonMethods._
 import scala.concurrent.{Future}
 import scala.util.{Failure, Success}
@@ -16,18 +18,20 @@ private[translator] object MicrosoftTokenProviderActor {
 
     private def requestToken(nowMillis: Long): Future[Token] =  {
         for {
-          response <- httpClient.post[String](HttpClientBasicRequest(requestAccessTokenUri), Seq(
+          response <- (httpClient.post[String](HttpClientBasicRequest(requestAccessTokenUri), Seq(
               "grant_type" -> "client_credentials",
               "client_id" -> clientId,
               "client_secret" -> clientSecret,
-              "scope" -> "http://api.microsofttranslator.com"))
+              "scope" -> "http://api.microsofttranslator.com"))).flatMap(matchResponseBody(_))
           newToken <-  Future {
               val newTokenJson = parse(response)
               val accessToken = (newTokenJson \ "access_token").extract[String]
               val expiresInSeconds = (newTokenJson \ "expires_in").extract[Long]
               val expiresInMillis = expiresInSeconds * 1000
               Token(accessToken, nowMillis + expiresInMillis - tokenExpirationDeltaInMillis)
-            }
+            }.recover {
+            case e: Exception => throw new RuntimeException(s"Server returned 200, but I can't parse a token. Response was: $response", e.getCause)
+          }
         } yield newToken
     }
 
