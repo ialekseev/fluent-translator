@@ -10,7 +10,7 @@ package object remote {
 
   val tokenExpirationDeltaInMillis = 60 * 1000
 
-  def matchResponseBody[T](response: (Int, T)): Future[T] = response match {
+  def extractResponseBody[T](response: (Int, T)): Future[T] = response match {
     case (200, r) => Future.successful(r)
     case (xxx, e) => Future.failed(new RuntimeException(s"Remote service returned status: $xxx and body: $e"))
   }

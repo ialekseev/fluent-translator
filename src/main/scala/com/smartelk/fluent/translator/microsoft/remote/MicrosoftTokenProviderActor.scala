@@ -3,8 +3,6 @@ package com.smartelk.fluent.translator.microsoft.remote
 import akka.actor.{Actor, Status}
 import com.smartelk.fluent.translator.basic.HttpClient.{HttpClient, _}
 import com.smartelk.fluent.translator.basic._
-import org.json4s.MappingException
-import org.json4s.ParserUtil.ParseException
 import org.json4s.native.JsonMethods._
 import scala.concurrent.{Future}
 import scala.util.{Failure, Success}
@@ -22,7 +20,7 @@ private[translator] object MicrosoftTokenProviderActor {
               "grant_type" -> "client_credentials",
               "client_id" -> clientId,
               "client_secret" -> clientSecret,
-              "scope" -> "http://api.microsofttranslator.com"))).flatMap(matchResponseBody(_))
+              "scope" -> "http://api.microsofttranslator.com"))).flatMap(extractResponseBody(_))
           newToken <-  Future {
               val newTokenJson = parse(response)
               val accessToken = (newTokenJson \ "access_token").extract[String]

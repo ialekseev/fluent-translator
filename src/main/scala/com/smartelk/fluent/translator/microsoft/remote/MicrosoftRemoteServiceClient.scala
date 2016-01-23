@@ -40,7 +40,7 @@ private[translator] object MicrosoftRemoteServiceClient {
       require(!r.toLang.isEmpty)
       require(r.category.isEmpty || !r.category.get.isEmpty)
 
-      val body = xml.Utility.trim(
+      val requestBody = xml.Utility.trim(
       <TranslateOptions xmlns="http://schemas.datacontract.org/2004/07/Microsoft.MT.Web.Service.V2">
         <Category>{r.category.getOrElse("")}</Category>
         <ContentType/>
@@ -51,12 +51,12 @@ private[translator] object MicrosoftRemoteServiceClient {
       </TranslateOptions>).buildString(true)
 
       for {
-        body <- call(httpClient.post[String](_, body))(HttpClientBasicRequest(getTranslationsUri,
+        responseBody <- call(httpClient.post[String](_, requestBody))(HttpClientBasicRequest(getTranslationsUri,
           Seq("text" -> r.text, "from" -> r.fromLang, "to" -> r.toLang, "maxTranslations" -> r.maxTranslations.toString), Seq("Content-Type" -> "text/xml")))
-        translationsXml = XML.loadString(body) \ "Translations"
+        translationsXml = XML.loadString(responseBody) \ "Translations"
         translationMatchesXml <- {
           if (translationsXml.size > 0) Future.successful(translationsXml \ "TranslationMatch")
-          else Future.failed(new RuntimeException(s"Remote service returned bad XML: $body"))
+          else Future.failed(new RuntimeException(s"Remote service returned bad XML: $responseBody"))
         }
         translations = translationMatchesXml.map(t =>
           TranslationMatch((t \ "TranslatedText").text, (t \ "MatchDegree").text.toInt, (t \ "Rating").text.toInt, (t \ "Count").text.toInt))
@@ -73,9 +73,9 @@ private[translator] object MicrosoftRemoteServiceClient {
       } yield SpeakResponse(body)
     }
 
-    private def call[T](func: HttpClientBasicRequest => Future[(Int, T)])(r: HttpClientBasicRequest): Future[T] = {
+    private def call[T](doRequest: HttpClientBasicRequest => Future[(Int, T)])(request: HttpClientBasicRequest): Future[T] = {
       (tokenProviderActor ? TokenRequestMessage).flatMap {
-        case Token(accessToken, _) => func(r.copy(headers = Seq("Authorization" -> ("Bearer " + accessToken)) ++: r.headers)).flatMap(matchResponseBody(_))
+        case Token(accessToken, _) => doRequest(request.copy(headers = Seq("Authorization" -> ("Bearer " + accessToken)) ++: request.headers)).flatMap(extractResponseBody(_))
         case Status.Failure(e) => Future.failed(e)
       }
     }

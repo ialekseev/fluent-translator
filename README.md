@@ -1,6 +1,6 @@
 # fluent-translator
 
-Scala library for working with Microsoft, Google(?)... translators via a fancy DSL.
+Scala non-blocking library for working with Microsoft, Google(?)... language translator services via a fancy DSL.
 
 Examples
 --------------
@@ -26,5 +26,11 @@ Installation
 Build.sbt:
 ```scala
    resolvers += Resolver.bintrayRepo("smartelk", "maven") 
-   libraryDependencies += "com.smartelk" %% "fluent-translator" % "0.1.1"
+   libraryDependencies += "com.smartelk" %% "fluent-translator" % "1.1.0"
 ```
+
+Dependencies
+--------------
+Library uses as few dependencies as possible, though it depends directly on few awesome projects:
+*akka* & *dispatch* (scala wrapper *for async-http-client*) - to help make things working in a non-blocking way;
+*json4s* - to help with json processing;

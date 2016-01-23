@@ -29,7 +29,7 @@ private[translator] object HttpClient {
       require(!body.isEmpty)
 
       val basicRequest = composeBasicRequest(r)
-      val request = basicRequest << body
+      val request = basicRequest.setBody(body.getBytes)
       go(request.POST, implicitly[HttpClientResponseComposer[T]])
     }
 
