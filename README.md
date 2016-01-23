@@ -31,6 +31,6 @@ Build.sbt:
 
 Dependencies
 --------------
-Library uses as few dependencies as possible, though it depends directly on few awesome projects:
-*akka* & *dispatch* (scala wrapper *for async-http-client*) - to help make things working in a non-blocking way;
-*json4s* - to help with json processing;
+Library uses as few dependencies as possible, though it depends directly on few awesome projects:  
+*akka* & *dispatch* (scala wrapper *for async-http-client*) - to help make things working in a non-blocking way;  
+*json4s* - to help with json processing; 
