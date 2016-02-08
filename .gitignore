@@ -4,9 +4,8 @@
 /project/project/
 **/target/
 
-#IDEA specific
-**/.idea/workspace.xml
-**/.idea/tasks.xml
+#IDEA
+/.idea/
 
 #OSX specific
 .DS_Store
