@@ -2,6 +2,7 @@ package com.smartelk.fluent.translator.microsoft.actions
 
 import com.smartelk.fluent.translator.Dsl.Microsoft.TranslatorClient
 import com.smartelk.fluent.translator.Dsl.future
+import com.smartelk.fluent.translator.basic._
 import com.smartelk.fluent.translator.basic.ActionState
 import com.smartelk.fluent.translator.microsoft.remote.MicrosoftRemoteServiceClient
 import MicrosoftRemoteServiceClient.{GetTranslationsResponse, GetTranslationsRequest}
@@ -14,7 +15,7 @@ private[translator] object MicrosoftGetTranslationsAction {
                               fromLang: Option[String] = None,
                               toLang: Option[String] = None,
                               category: Option[String] = None) {
-    requireValidText(text)
+    requireValidMicrosoftText(text)
     require(maxTranslations > 0, "Maximum number of translations to return must be > 0")
   }
 
@@ -34,7 +35,7 @@ private[translator] object MicrosoftGetTranslationsAction {
 
   class GetTranslationsActionStateTo(val state: GetTranslationsActionParams) extends ActionState[GetTranslationsActionParams] {
     def withCategory(category: String) = {
-      requireValidCategory(category)
+      requireValidMicrosoftCategory(category)
       new GetTranslationsActionStateTo(state.copy(category = Some(category)))
     }
 

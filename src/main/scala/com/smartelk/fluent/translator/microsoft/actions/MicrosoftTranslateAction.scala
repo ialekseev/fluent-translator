@@ -4,6 +4,7 @@ import com.smartelk.fluent.translator.Dsl.Microsoft.TranslatorClient
 import com.smartelk.fluent.translator.Dsl._
 import com.smartelk.fluent.translator.basic.ActionState
 import com.smartelk.fluent.translator.microsoft.remote.MicrosoftRemoteServiceClient
+import com.smartelk.fluent.translator.basic._
 import MicrosoftRemoteServiceClient.TranslateRequest
 import scala.concurrent.Future
 
@@ -14,7 +15,7 @@ private[translator] object MicrosoftTranslateAction {
                               toLang: Option[String] = None,
                               contentType: Option[TextContentType] = None,
                               category: Option[String] = None) {
-    requireValidText(text)
+    requireValidMicrosoftText(text)
   }
 
   class TranslateActionState(val state: TranslateActionParams) extends ActionState[TranslateActionParams]{
@@ -41,7 +42,7 @@ private[translator] object MicrosoftTranslateAction {
     }
 
     def withCategory(category: String) = {
-      requireValidCategory(category)
+      requireValidMicrosoftCategory(category)
       new TranslateActionStateTo(state.copy(category = Some(category)))
     }
 

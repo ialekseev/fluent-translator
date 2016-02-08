@@ -1,13 +1,6 @@
 package com.smartelk.fluent.translator
 
 import com.smartelk.fluent.translator.Dsl._
-import com.smartelk.fluent.translator.microsoft.actions
-import com.smartelk.fluent.translator.microsoft.actions.MicrosoftGetTranslationsAction.GetTranslationsActionParams
-import com.smartelk.fluent.translator.microsoft.actions.MicrosoftSpeakAction
-import com.smartelk.fluent.translator.microsoft.actions.MicrosoftSpeakAction.SpeakActionParams
-import com.smartelk.fluent.translator.microsoft.actions.MicrosoftTranslateAction.TranslateActionParams
-import com.smartelk.fluent.translator.microsoft.remote.MicrosoftRemoteServiceClient
-import MicrosoftRemoteServiceClient._
 import org.mockito.Mockito._
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.mock.MockitoSugar
@@ -15,7 +8,16 @@ import org.scalatest.{Matchers, WordSpecLike}
 import scala.concurrent.Future
 import scala.util.Random
 
-class DslSpec extends WordSpecLike with Matchers with MockitoSugar with ScalaFutures {
+trait DslSpec extends WordSpecLike with Matchers with MockitoSugar with ScalaFutures
+
+class MicrosoftDslSpec extends DslSpec {
+  import microsoft.actions
+  import microsoft.actions.MicrosoftGetTranslationsAction.GetTranslationsActionParams
+  import microsoft.actions.MicrosoftSpeakAction
+  import microsoft.actions.MicrosoftSpeakAction.SpeakActionParams
+  import microsoft.actions.MicrosoftTranslateAction.TranslateActionParams
+  import microsoft.remote.MicrosoftRemoteServiceClient._
+
   val serviceClient = mock[RemoteServiceClient]
   implicit object client extends MicrosoftTranslatorClient {
     val clientId = "my-client-id"
@@ -23,7 +25,7 @@ class DslSpec extends WordSpecLike with Matchers with MockitoSugar with ScalaFut
     override lazy val remoteServiceClient = serviceClient
   }
 
-  "Microsoft's TranslateAction" when {
+  "TranslateAction" when {
 
     "constructing TranslateActionParams with valid arguments" should {
       "do it properly" in {
@@ -70,7 +72,7 @@ class DslSpec extends WordSpecLike with Matchers with MockitoSugar with ScalaFut
     }
   }
 
-  "Microsoft's GetTranslationsAction" when {
+  "GetTranslationsAction" when {
 
     "constructing GetTranslationsActionParams with valid arguments" should {
       "do it properly" in {
@@ -120,7 +122,7 @@ class DslSpec extends WordSpecLike with Matchers with MockitoSugar with ScalaFut
     }
   }
 
-  "Microsoft's SpeakAction" when {
+  "SpeakAction" when {
 
       "constructing SpeakActionParams with valid arguments" should {
         "do it properly" in {
@@ -167,5 +169,26 @@ class DslSpec extends WordSpecLike with Matchers with MockitoSugar with ScalaFut
           }
         }
       }
+  }
+}
+
+class GoogleDslSpec extends DslSpec {
+  import google.actions.GoogleTranslateAction.TranslateActionParams
+
+  "TranslateAction" when {
+    "constructing TranslateActionParams with valid arguments" should {
+      "do it properly" in {
+        (Google give me a translation of "blabla" to "ru").state should be (TranslateActionParams("blabla", None, Some("ru"), None))
+        (Google give me a translation of "blabla2" from "en" to "fr" withContentType `text/html`).state should be (TranslateActionParams("blabla2", Some("en"), Some("fr"), Some(`text/html`)))
+      }
+    }
+
+    "constructing TranslateActionParams with illegal arguments" should {
+      "throw IllegalArgumentException" in {
+        the [IllegalArgumentException] thrownBy (Google give me a translation of "") should have message s"requirement failed: Text to be translated must not be empty"
+        the [IllegalArgumentException] thrownBy (Google give me a translation of "blabla" from "") should have message "requirement failed: Language to translate FROM must not be empty"
+        the [IllegalArgumentException] thrownBy (Google give me a translation of "blabla" from "en" to "") should have message "requirement failed: Language to translate TO must not be empty"
+      }
+    }
   }
 }

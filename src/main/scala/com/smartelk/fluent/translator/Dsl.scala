@@ -2,13 +2,7 @@ package com.smartelk.fluent.translator
 
 import akka.actor.{Props, ActorSystem}
 import com.smartelk.fluent.translator.basic.{ActionState, InitialActionState}
-import com.smartelk.fluent.translator.microsoft.actions.MicrosoftGetTranslationsAction.{GetTranslationsActionState, GetTranslationsActionParams}
-import com.smartelk.fluent.translator.microsoft.actions.MicrosoftSpeakAction.{SpeaksActionState, SpeakActionParams}
-import com.smartelk.fluent.translator.microsoft.actions.MicrosoftTranslateAction.{TranslateActionParams, TranslateActionState}
-import com.smartelk.fluent.translator.microsoft.remote.{MicrosoftTokenProviderActor, MicrosoftRemoteServiceClient}
 import com.smartelk.fluent.translator.basic.HttpClient._
-import MicrosoftRemoteServiceClient.{RemoteServiceClient, RemoteServiceClientImpl}
-import MicrosoftTokenProviderActor.TokenProviderActor
 
 object Dsl {
   val translatorActorSystem = ActorSystem("fluent-translator")
@@ -32,8 +26,15 @@ object Dsl {
 
   type TranslatorHttpClient = HttpClient
   type MicrosoftTranslatorClient = Microsoft.TranslatorClient
+  type GoogleTranslatorClient = Google.TranslatorClient
 
   object Microsoft {
+    import microsoft.actions.MicrosoftGetTranslationsAction.{GetTranslationsActionState, GetTranslationsActionParams}
+    import microsoft.actions.MicrosoftSpeakAction.{SpeaksActionState, SpeakActionParams}
+    import microsoft.actions.MicrosoftTranslateAction.{TranslateActionParams, TranslateActionState}
+    import microsoft.remote.MicrosoftRemoteServiceClient.{RemoteServiceClient, RemoteServiceClientImpl}
+    import microsoft.remote.MicrosoftTokenProviderActor.TokenProviderActor
+
     def give(meWord: me.type) = new GiveActionState
     def speak(text: String) = new SpeaksActionState(new SpeakActionParams(text))
 
@@ -65,6 +66,30 @@ object Dsl {
       lazy val httpClient = new HttpClient(_.setConnectTimeout(connectTimeoutMillis).setRequestTimeout(requestTimeoutMillis))
       lazy val tokenProviderActor = translatorActorSystem.actorOf(Props(new TokenProviderActor(clientId, clientSecret, httpClient)))
       lazy val remoteServiceClient: RemoteServiceClient = new RemoteServiceClientImpl(clientId, clientSecret, tokenProviderActor, tokenRequestTimeoutMillis, httpClient)
+    }
+  }
+
+  object Google {
+    import google.actions.GoogleTranslateAction.{TranslateActionParams, TranslateActionState}
+    import google.remote.GoogleRemoteServiceClient.{RemoteServiceClient, RemoteServiceClientImpl}
+
+    def give(meWord: me.type) = new GiveActionState
+
+    class GiveActionState extends InitialActionState {
+      def a(translationWord: translation.type) = new OneTranslationActionState
+    }
+
+    class OneTranslationActionState extends InitialActionState {
+      def of(text: String) = new TranslateActionState(TranslateActionParams(text))
+    }
+
+    trait TranslatorClient {
+      val apiKey: String
+
+      val connectTimeoutMillis = 1000
+      val requestTimeoutMillis = 5000
+      lazy val httpClient = new HttpClient(_.setConnectTimeout(connectTimeoutMillis).setRequestTimeout(requestTimeoutMillis))
+      lazy val remoteServiceClient: RemoteServiceClient = new RemoteServiceClientImpl(apiKey, httpClient)
     }
   }
 }
