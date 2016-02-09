@@ -174,6 +174,13 @@ class MicrosoftDslSpec extends DslSpec {
 
 class GoogleDslSpec extends DslSpec {
   import google.actions.GoogleTranslateAction.TranslateActionParams
+  import google.remote.GoogleRemoteServiceClient.{TranslateRequest, RemoteServiceClient}
+
+  val serviceClient = mock[RemoteServiceClient]
+  implicit object client extends GoogleTranslatorClient {
+    val apiKey = "my-api-key"
+    override lazy val remoteServiceClient = serviceClient
+  }
 
   "TranslateAction" when {
     "constructing TranslateActionParams with valid arguments" should {
@@ -188,6 +195,32 @@ class GoogleDslSpec extends DslSpec {
         the [IllegalArgumentException] thrownBy (Google give me a translation of "") should have message s"requirement failed: Text to be translated must not be empty"
         the [IllegalArgumentException] thrownBy (Google give me a translation of "blabla" from "") should have message "requirement failed: Language to translate FROM must not be empty"
         the [IllegalArgumentException] thrownBy (Google give me a translation of "blabla" from "en" to "") should have message "requirement failed: Language to translate TO must not be empty"
+      }
+    }
+
+    "constructing TranslateActionParams with valid arguments as future" should {
+      "1)call remote service client and get a translation" in {
+        //arrange
+        when(serviceClient.translate(TranslateRequest("blabla", "ru", None, None))).thenReturn(Future.successful("ablabl"))
+
+        //act
+        whenReady(Google give me a translation of "blabla" to "ru" as future){res =>
+
+          //assert
+          res should be ("ablabl")
+        }
+      }
+
+      "2)call remote service client and get a translation" in {
+        //arrange
+        when(serviceClient.translate(TranslateRequest("blabla", "ru", Some("en"), Some(`text/html`)))).thenReturn(Future.successful("ablabl"))
+
+        //act
+        whenReady(Google give me a translation of "blabla" from "en" to "ru" withContentType `text/html` as future){res =>
+
+          //assert
+          res should be ("ablabl")
+        }
       }
     }
   }

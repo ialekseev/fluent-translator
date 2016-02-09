@@ -4,6 +4,7 @@ import com.smartelk.fluent.translator.Dsl.Google.TranslatorClient
 import com.smartelk.fluent.translator.Dsl.{future, TextContentType}
 import com.smartelk.fluent.translator.basic.ActionState
 import com.smartelk.fluent.translator.basic._
+import com.smartelk.fluent.translator.google.remote.GoogleRemoteServiceClient.TranslateRequest
 import scala.concurrent.Future
 
 private[translator] object GoogleTranslateAction {
@@ -38,7 +39,7 @@ private[translator] object GoogleTranslateAction {
     }
 
     def as(scalaFutureWord: future.type)(implicit client: TranslatorClient): Future[String] = {
-      ???
+      client.remoteServiceClient.translate(TranslateRequest(state.text, state.toLang.get, state.fromLang, state.contentType))
     }
   }
 }

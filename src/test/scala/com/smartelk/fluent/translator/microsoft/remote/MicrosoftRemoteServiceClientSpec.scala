@@ -167,7 +167,7 @@ class MicrosoftRemoteServiceClientSpec(system: ActorSystem) extends TestKit(syst
         whenReady(client.getTranslations(GetTranslationsRequest("bla", 10, "en", "fr", None)).failed) { res =>
 
           //assert
-          res.getMessage should be("Remote service returned bad XML: " + gonnaReturn)
+          res.getMessage should be ("Server returned 200, but I can't parse XML. Response was: <bad>very bad</bad>")
         }
       }
     }
