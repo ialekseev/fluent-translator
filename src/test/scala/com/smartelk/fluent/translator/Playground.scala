@@ -10,19 +10,17 @@ import org.scalatest.{Matchers, WordSpecLike}
 import scala.util.Try
 
 //!Important!
-/* Playground - is a bunch of integration tests working with live Translator service. To make them work you need to create src/test/resources/playground.conf config with the following HOCON structure:
+/* Playground - is a bunch of integration tests working with live translator services. To make them work you need to create src/test/resources/playground.conf config with the following HOCON structure:
     playground {
       microsoft {
         client-id = "your microsoft client id"
         client-secret = "your microsoft client secret"
       }
       google {
-        key = "your google api key"
+        api-key = "your google api key"
       }
 }
 */
-
-//todo: fix broken specs: problem with HttpClient's post[T: HttpClientResponseComposer](r: HttpClientBasicRequest, body: String) ???
 
 trait Playground extends WordSpecLike with Matchers with MockitoSugar with ScalaFutures {
   case class HttpProxy(host: String, port: Int, user: Option[String] = None, password: Option[String] = None)
@@ -74,6 +72,12 @@ class MicrosoftPlayground extends Playground {
     "providing a good text" should {
       "successfully get a translation" in {
         (Microsoft give me a translation of "How are you?" from "en" to "fr" as future).futureValue should be("Comment vas-tu?")
+      }
+    }
+
+    "providing a good text without specifying 'from' (auto detection)" should {
+      "successfully get a translation" in {
+        (Microsoft give me a translation of "Comment vas-tu?" to "en" as future).futureValue should be("How are you?")
       }
     }
 
@@ -243,6 +247,12 @@ class GooglePlayground extends Playground {
       }
     }
 
+    "providing a good text without specifying 'from' (auto detection)" should {
+      "successfully get a translation" in {
+        (Google give me a translation of "Comment vas-tu?" to "en" as future).futureValue should be("How are you?")
+      }
+    }
+
     "providing a good text and an explicit content-type (text/html) " should {
       "successfully get a translation" in {
         (Google give me a translation of "How are you doing?" from "en" to "fr" withContentType `text/html` as future).futureValue should be("Comment allez vous?")
@@ -268,7 +278,7 @@ object Readme {
       val clientSecret = "microsoft client secret"
     }
 
-    Microsoft give me a translation of "Comment vas-tu?" from "fr" to "en" as future //Future[String]
+    Microsoft give me a translation of "Comment vas-tu?" to "en" as future //Future[String]
     Microsoft give me a translation of "What a lovely weather today!" from "en" to "fr" withContentType `text/html` as future //Future[String]
     Microsoft give me many translations of "Doing well by doing good" from "en" to "ru" as future //Future[GetTranslationsResponse]
     Microsoft give me translations(3) of "Paris holidays" from "en" to "ru" withCategory "general" as future //Future[GetTranslationsResponse]
@@ -283,7 +293,7 @@ object Readme {
       val apiKey = "google api key"
     }
 
-    Google give me a translation of "Comment vas-tu?" from "fr" to "en" as future //Future[String]
+    Google give me a translation of "Comment vas-tu?" to "en" as future //Future[String]
     Google give me a translation of "What a lovely weather today!" from "en" to "fr" withContentType `text/html` as future //Future[String]
   }
 }

@@ -9,11 +9,11 @@ Using Microsoft translator client:
 import com.smartelk.fluent.translator.Dsl._
 
 implicit object client extends MicrosoftTranslatorClient {
- val clientId = "microsoft client id"
- val clientSecret = "microsoft client secret"
+  val clientId = "microsoft client id"
+  val clientSecret = "microsoft client secret"
 }
 
-Microsoft give me a translation of "Comment vas-tu?" from "fr" to "en" as future //Future[String]
+Microsoft give me a translation of "Comment vas-tu?" to "en" as future //Future[String]
 Microsoft give me a translation of "What a lovely weather today!" from "en" to "fr" withContentType `text/html` as future //Future[String]
 Microsoft give me many translations of "Doing well by doing good" from "en" to "ru" as future //Future[GetTranslationsResponse]
 Microsoft give me translations(3) of "Paris holidays" from "en" to "ru" withCategory "general" as future //Future[GetTranslationsResponse]
@@ -26,10 +26,10 @@ Using Google translator client:
 import com.smartelk.fluent.translator.Dsl._
 
 implicit object client extends GoogleTranslatorClient {
-val apiKey = "google api key"
+  val apiKey = "google api key"
 }
 
-Google give me a translation of "Comment vas-tu?" from "fr" to "en" as future //Future[String]
+Google give me a translation of "Comment vas-tu?" to "en" as future //Future[String]
 Google give me a translation of "What a lovely weather today!" from "en" to "fr" withContentType `text/html` as future //Future[String]
 ```
 
@@ -46,3 +46,19 @@ Dependencies
 Library uses as few dependencies as possible, though it depends directly on few awesome projects:  
 *akka* & *dispatch* (scala wrapper *for async-http-client*) - to help make things working in a non-blocking way;  
 *json4s* - to help with json processing; 
+
+Useful links
+--------------
+#### Microsoft
+Registering application at Microsoft and obtaining client id and client secret:
+https://datamarket.azure.com/developer/applications/
+
+List of supported language codes by Microsoft translator:
+https://msdn.microsoft.com/en-us/library/hh456380.aspx
+
+#### Google
+Creating project at Google and obtaining api key:
+https://console.cloud.google.com/projectselector/apis/credentials
+
+List of supported language codes by Google translator:
+https://cloud.google.com/translate/v2/using_rest
