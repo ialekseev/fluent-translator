@@ -50,15 +50,15 @@ Library uses as few dependencies as possible, though it depends directly on few 
 Useful links
 --------------
 #### Microsoft
-Registering application at Microsoft and obtaining client id and client secret:
+Registering application at Microsoft and obtaining client id and client secret:  
 https://datamarket.azure.com/developer/applications/
 
-List of supported language codes by Microsoft translator:
+List of supported language codes by Microsoft translator:  
 https://msdn.microsoft.com/en-us/library/hh456380.aspx
 
 #### Google
-Creating project at Google and obtaining api key:
+Creating project at Google and obtaining api key:  
 https://console.cloud.google.com/projectselector/apis/credentials
 
-List of supported language codes by Google translator:
+List of supported language codes by Google translator:  
 https://cloud.google.com/translate/v2/using_rest
