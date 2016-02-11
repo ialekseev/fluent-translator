@@ -1,6 +1,6 @@
 name := "fluent-translator"
 organization := "com.smartelk"
-version := "1.1.0"
+version := "2.1.0"
 scalaVersion := "2.11.7"
 scalacOptions := Seq("-deprecation", "-feature")
 resolvers ++= Seq(

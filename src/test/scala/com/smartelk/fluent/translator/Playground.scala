@@ -13,8 +13,11 @@ import scala.util.Try
 /* Playground - is a bunch of integration tests working with live Translator service. To make them work you need to create src/test/resources/playground.conf config with the following HOCON structure:
     playground {
       microsoft {
-        clientId = "your client id"
-        clientSecret = "your client secret"
+        client-id = "your microsoft client id"
+        client-secret = "your microsoft client secret"
+      }
+      google {
+        key = "your google api key"
       }
 }
 */
@@ -30,8 +33,8 @@ trait Playground extends WordSpecLike with Matchers with MockitoSugar with Scala
 }
 
 class MicrosoftPlayground extends Playground {
-    val playgroundClientId = config.getString("playground.microsoft.clientId")
-    val playgroundClientSecret = config.getString("playground.microsoft.clientSecret")
+    val playgroundClientId = config.getString("playground.microsoft.client-id")
+    val playgroundClientSecret = config.getString("playground.microsoft.client-secret")
 
     implicit object client extends MicrosoftTranslatorClient {
       val clientId = playgroundClientId
@@ -211,9 +214,53 @@ class MicrosoftPlayground extends Playground {
   }
 }
 
+class GooglePlayground extends Playground {
+  implicit val client = new GoogleTranslatorClient {
+    val apiKey = config.getString("playground.google.api-key")
+  }
+
+  "Translating" when {
+
+    "providing an invalid api key" should {
+      "fail" in {
+        implicit val client = new GoogleTranslatorClient {
+          val apiKey = "bad"
+        }
+
+        (the[RuntimeException] thrownBy (Google give me a translation of "How are you?" from "en" to "fr" as future).futureValue).getMessage.contains("keyInvalid") should be(true)
+      }
+    }
+
+    "providing jabberwocky text" should {
+      "return the same text back" in {
+        (Google give me a translation of "qweqwuiyqweqweasdasdbmbnmqweqwenbmbanbsadsds" from "en" to "ru" as future).futureValue should be("qweqwuiyqweqweasdasdbmbnmqweqwenbmbanbsadsds")
+      }
+    }
+
+    "providing a good text" should {
+      "successfully get a translation" in {
+        (Google give me a translation of "How are you doing?" from "en" to "fr" as future).futureValue should be("Comment allez vous?")
+      }
+    }
+
+    "providing a good text and an explicit content-type (text/html) " should {
+      "successfully get a translation" in {
+        (Google give me a translation of "How are you doing?" from "en" to "fr" withContentType `text/html` as future).futureValue should be("Comment allez vous?")
+      }
+    }
+
+    "providing a good text and an explicit content-type (text/plain) " should {
+      "successfully get a translation" in {
+        (Google give me a translation of "How are you doing?" from "en" to "fr" withContentType `text/plain` as future).futureValue should be("Comment allez vous?")
+      }
+    }
+  }
+}
+
 object Readme {
   /***README.md*/
-  def readme = {
+
+  def microsoft = {
     import com.smartelk.fluent.translator.Dsl._
 
     implicit object client extends MicrosoftTranslatorClient {
@@ -227,5 +274,16 @@ object Readme {
     Microsoft give me translations(3) of "Paris holidays" from "en" to "ru" withCategory "general" as future //Future[GetTranslationsResponse]
     Microsoft speak "I'm doing well enough now" in "en" withAudioContentType `audio/mp3` as future //Future[SpeakResponse]
     Microsoft speak "How are you doing?" in "en" withQuality MinSize as future //Future[SpeakResponse]
+  }
+
+  def google = {
+    import com.smartelk.fluent.translator.Dsl._
+
+    implicit object client extends GoogleTranslatorClient {
+      val apiKey = "google api key"
+    }
+
+    Google give me a translation of "Comment vas-tu?" from "fr" to "en" as future //Future[String]
+    Google give me a translation of "What a lovely weather today!" from "en" to "fr" withContentType `text/html` as future //Future[String]
   }
 }

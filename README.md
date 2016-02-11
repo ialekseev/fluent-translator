@@ -1,6 +1,6 @@
 # fluent-translator
 
-Scala non-blocking library for working with Microsoft, Google(?)... language translator services via a fancy DSL.
+Scala non-blocking library for working with Microsoft, Google ... language translator services via a fancy DSL.
 
 Examples
 --------------
@@ -21,12 +21,24 @@ Using Microsoft translator client:
   Microsoft speak "How are you doing?" in "en" withQuality MinSize as future //Future[SpeakResponse]
 ```
 
+Using Google translator client:
+```scala
+  import com.smartelk.fluent.translator.Dsl._
+
+  implicit object client extends GoogleTranslatorClient {
+    val apiKey = "google api key"
+  }
+
+  Google give me a translation of "Comment vas-tu?" from "fr" to "en" as future //Future[String]
+  Google give me a translation of "What a lovely weather today!" from "en" to "fr" withContentType `text/html` as future //Future[String]
+```
+
 Installation
 --------------
 Build.sbt:
 ```scala
    resolvers += Resolver.bintrayRepo("smartelk", "maven") 
-   libraryDependencies += "com.smartelk" %% "fluent-translator" % "1.1.0"
+   libraryDependencies += "com.smartelk" %% "fluent-translator" % "2.1.0"
 ```
 
 Dependencies
